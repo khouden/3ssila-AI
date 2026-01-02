@@ -2,7 +2,7 @@ import axios from "axios";
 
 // 1. Create an Axios instance
 const apiClient = axios.create({
-  baseURL: "http://[REDACTED]",
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     Accept: "application/json",
   },
