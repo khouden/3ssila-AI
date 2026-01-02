@@ -29,7 +29,7 @@ const getIcon = (type: string) => {
 </script>
 
 <template>
-  <div class="fixed top-4 right-4 z-50 flex flex-col gap-2">
+  <div class="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
     <div v-for="t in toast.toasts" :key="t.id" :class="getToastClasses(t.type)">
       <div class="flex items-center gap-3">
         <span class="text-2xl font-bold">{{ getIcon(t.type) }}</span>
