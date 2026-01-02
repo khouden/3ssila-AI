@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import api from "../services/api";
+import { toast } from "../stores/toast";
 
 const router = useRouter();
 
@@ -12,7 +13,7 @@ const password = ref("");
 
 const handleSignup = async () => {
   if (!email.value || !password.value || !name.value) {
-    alert("Please fill in all fields.");
+    toast.warning("Please fill in all fields.");
     return;
   }
 
@@ -27,7 +28,7 @@ const handleSignup = async () => {
     router.push("/login");
   } catch (error: any) {
     console.error("Signup error", error);
-    alert(error.response?.data?.message || "Signup failed");
+    toast.error(error.response?.data?.message || "Signup failed");
   }
 };
 </script>
