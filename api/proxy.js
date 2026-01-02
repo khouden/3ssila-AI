@@ -24,18 +24,23 @@ export default async function handler(req, res) {
       headers,
     };
 
-    // Handle request body - send raw buffer/stream
-    if (req.method !== "GET" && req.method !== "HEAD") {
-      if (req.body) {
-        // In Vercel, req.body might be a string or buffer
-        if (typeof req.body === "string") {
-          fetchOptions.body = req.body;
-        } else if (Buffer.isBuffer(req.body)) {
-          fetchOptions.body = req.body;
-        } else if (req.body instanceof URLSearchParams) {
-          fetchOptions.body = req.body.toString();
+    // Handle request body
+    if (req.method !== "GET" && req.method !== "HEAD" && req.body) {
+      const contentType = req.headers["content-type"] || "";
+
+      if (typeof req.body === "string") {
+        // Already a string, send as-is
+        fetchOptions.body = req.body;
+      } else if (Buffer.isBuffer(req.body)) {
+        // Buffer, send as-is
+        fetchOptions.body = req.body;
+      } else if (typeof req.body === "object") {
+        // Vercel parsed the body into an object
+        if (contentType.includes("application/x-www-form-urlencoded")) {
+          // Convert object back to URL-encoded string
+          fetchOptions.body = new URLSearchParams(req.body).toString();
         } else {
-          // For plain objects, stringify as JSON
+          // JSON content
           fetchOptions.body = JSON.stringify(req.body);
         }
       }
@@ -44,7 +49,7 @@ export default async function handler(req, res) {
     console.log("Proxying to:", targetUrl);
     console.log("Method:", fetchOptions.method);
     console.log("Headers:", fetchOptions.headers);
-    console.log("Body type:", typeof fetchOptions.body);
+    console.log("Body:", fetchOptions.body);
 
     const response = await fetch(targetUrl, fetchOptions);
     const data = await response.text();
