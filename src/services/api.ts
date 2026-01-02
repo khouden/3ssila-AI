@@ -31,10 +31,10 @@ export default {
 
   // Auth Services
   login(credentials: { email: string; password: string }) {
-    const params = new URLSearchParams();
-    params.append("username", credentials.email);
-    params.append("password", credentials.password);
-    return apiClient.post("/auth/login", params);
+    return apiClient.post("/auth/login", {
+      username: credentials.email,
+      password: credentials.password,
+    });
   },
 
   register(userData: object) {
