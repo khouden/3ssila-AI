@@ -38,7 +38,7 @@ const router = createRouter({
 });
 
 // Redirect authenticated users away from login/signup pages
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   if (auth.isAuthenticated() && (to.name === "login" || to.name === "signup")) {
     next("/");
   } else {
