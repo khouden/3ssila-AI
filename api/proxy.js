@@ -6,20 +6,32 @@ export default async function handler(req, res) {
   const targetUrl = `${BACKEND_URL}${targetPath}`;
 
   try {
-    const response = await fetch(targetUrl, {
+    const fetchOptions = {
       method: req.method,
       headers: {
-        "Content-Type": req.headers["content-type"] || "application/json",
         ...(req.headers.authorization && {
           Authorization: req.headers.authorization,
         }),
       },
-      body:
-        req.method !== "GET" && req.method !== "HEAD"
-          ? JSON.stringify(req.body)
-          : undefined,
-    });
+    };
 
+    // Handle request body
+    if (req.method !== "GET" && req.method !== "HEAD" && req.body) {
+      // Preserve original content-type
+      if (req.headers["content-type"]) {
+        fetchOptions.headers["Content-Type"] = req.headers["content-type"];
+      }
+
+      // If body is URLSearchParams or string, send as-is
+      if (req.body instanceof URLSearchParams || typeof req.body === "string") {
+        fetchOptions.body = req.body.toString();
+      } else {
+        // Otherwise stringify as JSON
+        fetchOptions.body = JSON.stringify(req.body);
+      }
+    }
+
+    const response = await fetch(targetUrl, fetchOptions);
     const data = await response.json();
     res.status(response.status).json(data);
   } catch (error) {
