@@ -2,7 +2,7 @@ import axios from "axios";
 
 // 1. Create an Axios instance
 const apiClient = axios.create({
-  baseURL: "http://[REDACTED]",
+  baseURL: "/api",
   headers: {
     Accept: "application/json",
   },
