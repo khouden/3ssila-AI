@@ -6,50 +6,55 @@ export default async function handler(req, res) {
   const targetUrl = `${BACKEND_URL}${targetPath}`;
 
   try {
+    // Build headers, forwarding all relevant ones
+    const headers = {};
+
+    // Forward content-type if present
+    if (req.headers["content-type"]) {
+      headers["Content-Type"] = req.headers["content-type"];
+    }
+
+    // Forward authorization
+    if (req.headers.authorization) {
+      headers["Authorization"] = req.headers.authorization;
+    }
+
     const fetchOptions = {
       method: req.method,
-      headers: {
-        ...(req.headers.authorization && {
-          Authorization: req.headers.authorization,
-        }),
-      },
+      headers,
     };
 
-    // Handle request body
+    // Handle request body - send raw buffer/stream
     if (req.method !== "GET" && req.method !== "HEAD") {
-      // Preserve original content-type
-      if (req.headers["content-type"]) {
-        fetchOptions.headers["Content-Type"] = req.headers["content-type"];
-      }
-
-      // Handle different body types
       if (req.body) {
-        if (Buffer.isBuffer(req.body)) {
-          // If it's a buffer, send as-is
+        // In Vercel, req.body might be a string or buffer
+        if (typeof req.body === "string") {
           fetchOptions.body = req.body;
-        } else if (typeof req.body === "string") {
-          // If it's a string, send as-is
+        } else if (Buffer.isBuffer(req.body)) {
           fetchOptions.body = req.body;
-        } else if (typeof req.body === "object") {
-          // If it's an object, check if it's URLSearchParams
-          if (req.body instanceof URLSearchParams) {
-            fetchOptions.body = req.body.toString();
-          } else {
-            // Otherwise stringify as JSON
-            fetchOptions.body = JSON.stringify(req.body);
-          }
+        } else if (req.body instanceof URLSearchParams) {
+          fetchOptions.body = req.body.toString();
+        } else {
+          // For plain objects, stringify as JSON
+          fetchOptions.body = JSON.stringify(req.body);
         }
       }
     }
 
+    console.log("Proxying to:", targetUrl);
+    console.log("Method:", fetchOptions.method);
+    console.log("Headers:", fetchOptions.headers);
+    console.log("Body type:", typeof fetchOptions.body);
+
     const response = await fetch(targetUrl, fetchOptions);
     const data = await response.text();
 
+    // Forward status and content-type
     res.status(response.status);
-    res.setHeader(
-      "Content-Type",
-      response.headers.get("content-type") || "application/json"
-    );
+    if (response.headers.get("content-type")) {
+      res.setHeader("Content-Type", response.headers.get("content-type"));
+    }
+
     res.send(data);
   } catch (error) {
     console.error("Proxy error:", error);
