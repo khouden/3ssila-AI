@@ -59,7 +59,6 @@ const handleAuth = async () => {
             v-model="email"
             type="email"
             placeholder="Type your email"
-            required
             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
           />
         </div>
@@ -84,7 +83,6 @@ const handleAuth = async () => {
             v-model="password"
             type="password"
             placeholder="Type your password"
-            required
             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
           />
         </div>
