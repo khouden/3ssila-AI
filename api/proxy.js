@@ -1,11 +1,9 @@
 export default async function handler(req, res) {
   const BACKEND_URL = "http://[REDACTED]";
 
-  // Get the path from the query
-  const { path } = req.query;
-  const targetPath = Array.isArray(path) ? path.join("/") : path || "";
-
-  const targetUrl = `${BACKEND_URL}/${targetPath}`;
+  // Extract the path from the URL (remove /api prefix)
+  const targetPath = req.url.replace(/^\/api/, "");
+  const targetUrl = `${BACKEND_URL}${targetPath}`;
 
   try {
     const response = await fetch(targetUrl, {
