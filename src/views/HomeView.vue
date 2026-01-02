@@ -261,7 +261,7 @@ const goToSignup = () => {
               <button
                 v-if="resultText"
                 @click="copyToClipboard"
-                class="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-cyan-600 transition-colors"
+                class="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-cyan-600 transition-colors cursor-pointer"
               >
                 <svg
                   class="w-4 h-4"
