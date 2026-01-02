@@ -1,100 +1,104 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import api from '../services/api'
-import { auth } from '../stores/auth'
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import api from "../services/api";
 
-const router = useRouter()
+const router = useRouter();
 
 // State
-const name = ref('')
-const email = ref('')
-const password = ref('')
+const name = ref("");
+const email = ref("");
+const password = ref("");
 
 const handleSignup = async () => {
   if (!email.value || !password.value || !name.value) {
-    alert("Please fill in all fields.")
-    return
+    alert("Please fill in all fields.");
+    return;
   }
 
   try {
-    console.log('Signing up with:', { name: name.value, email: email.value })
-    const response = await api.register({ name: name.value, email: email.value, hashed_password: password.value })
-    console.log('Signup response:', response)
-    router.push('/login')
+    console.log("Signing up with:", { name: name.value, email: email.value });
+    const response = await api.register({
+      name: name.value,
+      email: email.value,
+      hashed_password: password.value,
+    });
+    console.log("Signup response:", response);
+    router.push("/login");
   } catch (error: any) {
-    console.error("Signup error", error)
+    console.error("Signup error", error);
     alert(error.response?.data?.message || "Signup failed");
   }
-}
-
-const handleGoogleAuth = () => {
-  console.log("Connect with Google clicked")
-}
+};
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center bg-white px-4 sm:px-6 lg:px-8">
-    
+  <div
+    class="min-h-screen flex flex-col items-center justify-center bg-white px-4 sm:px-6 lg:px-8"
+  >
     <div class="max-w-[400px] w-full space-y-8">
-      
       <div class="text-center">
-        <h2 class="text-3xl font-bold text-gray-900">
-          Create an account
-        </h2>
+        <h2 class="text-3xl font-bold text-gray-900">Create an account</h2>
         <p class="mt-2 text-sm text-gray-600">
           Start humanizing your text today
         </p>
       </div>
 
       <form class="mt-8 space-y-5" @submit.prevent="handleSignup">
-        
         <div>
-          <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            for="name"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
             Name
           </label>
-          <input 
-            id="name" 
+          <input
+            id="name"
             v-model="name"
-            type="text" 
+            type="text"
             placeholder="Type your name"
-            required 
+            required
             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
           />
         </div>
 
         <div>
-          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            for="email"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
             Email
           </label>
-          <input 
-            id="email" 
+          <input
+            id="email"
             v-model="email"
-            type="email" 
+            type="email"
             placeholder="Type your email"
-            required 
+            required
             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
           />
         </div>
 
         <div>
-          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            for="password"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
             Password
           </label>
-          <input 
-            id="password" 
+          <input
+            id="password"
             v-model="password"
-            type="password" 
+            type="password"
             placeholder="Create a password"
-            required 
+            required
             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
           />
         </div>
 
         <div class="space-y-4 pt-2">
-          
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-black bg-[#67e8f9] hover:bg-[#22d3ee] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400 transition-colors cursor-pointer"
           >
             Sign up
@@ -114,18 +118,19 @@ const handleGoogleAuth = () => {
             Sign up with Google
           </button> -->
         </div>
-
       </form>
 
       <div class="text-center mt-6">
         <p class="text-sm text-gray-500">
-          Already have an account? 
-          <RouterLink to="/login" class="font-medium text-gray-900 hover:underline ml-1">
+          Already have an account?
+          <RouterLink
+            to="/login"
+            class="font-medium text-gray-900 hover:underline ml-1"
+          >
             Log in
           </RouterLink>
         </p>
       </div>
-
     </div>
   </div>
 </template>

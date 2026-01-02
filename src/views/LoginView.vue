@@ -1,100 +1,99 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import api from '../services/api'
-import { auth } from '../stores/auth'
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import api from "../services/api";
+import { auth } from "../stores/auth";
 
-const router = useRouter()
+const router = useRouter();
 
-const email = ref('')
-const password = ref('')
-
+const email = ref("");
+const password = ref("");
 
 const handleAuth = async () => {
   if (!email.value || !password.value) {
-    alert("Please fill in all fields.")
-    return
+    alert("Please fill in all fields.");
+    return;
   }
   try {
-    const response = await api.login({ 
-      email: email.value, 
-      password: password.value 
-    })
+    const response = await api.login({
+      email: email.value,
+      password: password.value,
+    });
 
     const { access_token } = response.data;
 
-    auth.setAuth(access_token)
+    auth.setAuth(access_token);
 
     const response2 = await api.getUser();
 
     auth.setUser(response2.data);
 
-    router.push('/')
-    
+    router.push("/");
   } catch (error: any) {
-    console.error("Auth error", error)
-    alert(error.response?.data?.message || "Login failed")
+    console.error("Auth error", error);
+    alert(error.response?.data?.message || "Login failed");
   }
-}
-
-const handleGoogleAuth = () => {
-  console.log("Connect with Google clicked")
-}
+};
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center bg-white px-4 sm:px-6 lg:px-8">
-    
+  <div
+    class="min-h-screen flex flex-col items-center justify-center bg-white px-4 sm:px-6 lg:px-8"
+  >
     <div class="max-w-[400px] w-full space-y-8">
-      
       <div class="text-center">
-        <h2 class="text-3xl font-bold text-gray-900">
-          Log in
-        </h2>
+        <h2 class="text-3xl font-bold text-gray-900">Log in</h2>
       </div>
 
       <form class="mt-8 space-y-5" @submit.prevent="handleAuth">
-
         <div>
-          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            for="email"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
             Email
           </label>
-          <input 
-            id="email" 
+          <input
+            id="email"
             v-model="email"
-            type="email" 
+            type="email"
             placeholder="Type your email"
-            required 
+            required
             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
           />
         </div>
 
         <div>
           <div class="flex items-center justify-between mb-1">
-            <label for="password" class="block text-sm font-medium text-gray-700">
+            <label
+              for="password"
+              class="block text-sm font-medium text-gray-700"
+            >
               Password
             </label>
-            <a href="#" class="text-sm font-medium text-gray-600 hover:text-gray-900 hover:underline decoration-1 underline-offset-2">
+            <a
+              href="#"
+              class="text-sm font-medium text-gray-600 hover:text-gray-900 hover:underline decoration-1 underline-offset-2"
+            >
               Forgot password?
             </a>
           </div>
-          <input 
-            id="password" 
+          <input
+            id="password"
             v-model="password"
-            type="password" 
+            type="password"
             placeholder="Type your password"
-            required 
+            required
             class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
           />
         </div>
 
         <div class="space-y-4 pt-2">
-          
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-black bg-[#67e8f9] hover:bg-[#22d3ee] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400 transition-colors cursor-pointer"
           >
-           Log in
+            Log in
           </button>
 
           <!-- <button 
@@ -111,21 +110,19 @@ const handleGoogleAuth = () => {
             Login with Google
           </button> -->
         </div>
-
       </form>
 
       <div class="text-center mt-6">
         <p class="text-sm text-gray-500">
           Don't have an account?
-          <button 
-            @click="router.push('/signup')" 
+          <button
+            @click="router.push('/signup')"
             class="font-medium text-gray-900 hover:underline ml-1 cursor-pointer cursor-pointer"
           >
             Sign Up
           </button>
         </p>
       </div>
-
     </div>
   </div>
-</template> 
+</template>
