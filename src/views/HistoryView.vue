@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import api from "../services/api";
 import { auth } from "../stores/auth";
+import { toast } from "../stores/toast";
 
 const router = useRouter();
 
@@ -146,7 +147,7 @@ const deleteItem = async (itemId: string) => {
     await fetchHistory();
   } catch (error) {
     console.error("Error deleting item:", error);
-    alert("Failed to delete item. Please try again.");
+    toast.error("Failed to delete item. Please try again.");
   } finally {
     isDeleting.value = false;
   }
@@ -167,7 +168,7 @@ const deleteSelected = async () => {
     await fetchHistory();
   } catch (error) {
     console.error("Error deleting items:", error);
-    alert("Failed to delete some items. Please try again.");
+    toast.error("Failed to delete some items. Please try again.");
   } finally {
     isDeleting.value = false;
   }
@@ -175,7 +176,7 @@ const deleteSelected = async () => {
 
 const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text);
-  alert("Copied to clipboard!");
+  toast.success("Copied to clipboard!");
 };
 
 const goToNextPage = () => {

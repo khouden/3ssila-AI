@@ -3,6 +3,7 @@ import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import api from "../services/api";
 import { auth } from "../stores/auth";
+import { toast } from "../stores/toast";
 
 const router = useRouter();
 
@@ -12,19 +13,15 @@ const resultText = ref("");
 const mode = ref<"translate" | "summarize">("translate");
 const targetLanguage = ref("French");
 const isLoading = ref(false);
-const WORD_LIMIT = 250;
+const CHARACTER_LIMIT = 250;
 
 // --- Computed ---
-const wordCount = computed(() => {
-  return inputText.value.trim()
-    ? inputText.value.trim().split(/\s+/).length
-    : 0;
+const characterCount = computed(() => {
+  return inputText.value.length;
 });
 
-const resultWordCount = computed(() => {
-  return resultText.value.trim()
-    ? resultText.value.trim().split(/\s+/).length
-    : 0;
+const resultCharacterCount = computed(() => {
+  return resultText.value.length;
 });
 
 // --- Methods ---
@@ -74,7 +71,7 @@ const handleSubmit = async () => {
 const copyToClipboard = () => {
   if (resultText.value) {
     navigator.clipboard.writeText(resultText.value);
-    alert("Copied to clipboard!");
+    toast.success("Copied to clipboard!");
   }
 };
 
@@ -185,7 +182,7 @@ const goToSignup = () => {
             <div class="mt-4 flex items-center justify-between relative z-10">
               <div class="flex items-center gap-2">
                 <span class="text-xs font-medium text-gray-400"
-                  >{{ wordCount }} words</span
+                  >{{ characterCount }} characters</span
                 >
                 <span
                   v-if="!auth.isAuthenticated()"
@@ -193,7 +190,7 @@ const goToSignup = () => {
                   title="Sign up to have unlimited tries"
                   class="text-xs font-medium text-orange-500 hover:text-orange-600 cursor-pointer underline decoration-dotted"
                 >
-                  / {{ WORD_LIMIT }} limit
+                  / {{ CHARACTER_LIMIT }} limit
                 </span>
               </div>
               <button
@@ -258,7 +255,7 @@ const goToSignup = () => {
               class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between"
             >
               <span class="text-xs font-medium text-gray-400"
-                >{{ resultWordCount }} words</span
+                >{{ resultCharacterCount }} characters</span
               >
 
               <button
