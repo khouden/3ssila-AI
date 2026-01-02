@@ -2,7 +2,7 @@ import axios from "axios";
 
 // 1. Create an Axios instance
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000",
   headers: {
     Accept: "application/json",
   },
@@ -72,5 +72,5 @@ export default {
 
   deleteSummary(id: string) {
     return apiClient.delete(`/history/summaries/${id}`);
-  }
+  },
 };
