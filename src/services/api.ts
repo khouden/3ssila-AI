@@ -31,9 +31,14 @@ export default {
 
   // Auth Services
   login(credentials: { email: string; password: string }) {
-    return apiClient.post("/auth/login", {
-      username: credentials.email,
-      password: credentials.password,
+    // FastAPI OAuth2 expects form-urlencoded data
+    const formData = `username=${encodeURIComponent(
+      credentials.email
+    )}&password=${encodeURIComponent(credentials.password)}`;
+    return apiClient.post("/auth/login", formData, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
     });
   },
 
