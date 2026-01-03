@@ -112,6 +112,10 @@ const copyToClipboard = () => {
 const goToSignup = () => {
   router.push("/signup");
 };
+
+const closeLanguageDropdown = () => {
+  setTimeout(() => (isLanguageDropdownOpen.value = false), 150);
+};
 </script>
 
 <template>
@@ -171,11 +175,11 @@ const goToSignup = () => {
             <div class="relative">
               <button
                 @click="isLanguageDropdownOpen = !isLanguageDropdownOpen"
-                @blur="setTimeout(() => (isLanguageDropdownOpen = false), 150)"
+                @blur="closeLanguageDropdown"
                 class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-1.5 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 cursor-pointer"
               >
-                <span :class="`fi fi-${selectedLanguage.code}`"></span>
-                <span>{{ selectedLanguage.name }}</span>
+                <span :class="`fi fi-${selectedLanguage?.code}`"></span>
+                <span>{{ selectedLanguage?.name }}</span>
               </button>
               <div
                 class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500"

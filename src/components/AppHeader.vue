@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { RouterLink, useRouter, useRoute } from "vue-router";
 import { auth } from "../stores/auth";
 
@@ -19,20 +19,6 @@ const profileMenu = ref<HTMLElement | null>(null);
 // --- Scroll Logic ---
 const isScrolled = ref(false);
 
-// --- Navigation Items ---
-const mainNavItems = [
-  { name: "Home", path: "/", icon: "home" },
-  { name: "About", path: "/about", icon: "about" },
-];
-
-const productItems = [
-  { name: "Translation", path: "/?mode=translate", description: "Translate text between 50+ languages" },
-  { name: "Summarization", path: "/?mode=summarize", description: "Condense long texts into key points" },
-];
-
-// --- Computed ---
-const isHomePage = computed(() => route.path === "/");
-
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value;
 };
@@ -44,7 +30,6 @@ const closeMobileMenu = () => {
 const toggleProfileMenu = () => {
   isProfileMenuOpen.value = !isProfileMenuOpen.value;
 };
-
 
 const handleLogout = () => {
   auth.clearAuth();
@@ -66,12 +51,6 @@ const toggleTheme = () => {
 
 const goHome = () => {
   router.push("/");
-  closeMobileMenu();
-};
-
-const navigateToProduct = (path: string) => {
-  router.push(path);
-  window.scrollTo({ top: 0, behavior: "smooth" });
   closeMobileMenu();
 };
 
@@ -114,7 +93,7 @@ onBeforeUnmount(() => {
     :class="[
       isScrolled
         ? 'border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur-md shadow-sm'
-        : 'border-transparent bg-white dark:bg-[#1a1a1a]'
+        : 'border-transparent bg-white dark:bg-[#1a1a1a]',
     ]"
   >
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -142,11 +121,13 @@ onBeforeUnmount(() => {
           <RouterLink
             to="/"
             class="relative px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 rounded-lg transition-all duration-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
-            :class="{ '!text-cyan-500 dark:!text-cyan-400': route.path === '/' && !route.query.mode }"
+            :class="{
+              '!text-cyan-500 dark:!text-cyan-400':
+                route.path === '/' && !route.query.mode,
+            }"
           >
             Home
           </RouterLink>
-
 
           <!-- History (for authenticated users) -->
           <RouterLink
@@ -174,7 +155,9 @@ onBeforeUnmount(() => {
           <button
             @click="toggleTheme"
             class="p-2.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 cursor-pointer"
-            :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+            :aria-label="
+              isDark ? 'Switch to light mode' : 'Switch to dark mode'
+            "
           >
             <svg
               v-if="isDark"
@@ -215,10 +198,14 @@ onBeforeUnmount(() => {
                 @click="toggleProfileMenu"
                 class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500/50 cursor-pointer"
               >
-                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white text-sm font-bold">
-                  {{ (auth.user?.name || 'U').charAt(0).toUpperCase() }}
+                <div
+                  class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white text-sm font-bold"
+                >
+                  {{ (auth.user?.name || "U").charAt(0).toUpperCase() }}
                 </div>
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-200 max-w-[120px] truncate">
+                <span
+                  class="text-sm font-medium text-gray-700 dark:text-gray-200 max-w-[120px] truncate"
+                >
                   {{ auth.user?.name || "User" }}
                 </span>
                 <svg
@@ -228,7 +215,12 @@ onBeforeUnmount(() => {
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
 
@@ -244,9 +236,19 @@ onBeforeUnmount(() => {
                   v-if="isProfileMenuOpen"
                   class="absolute right-0 mt-2 w-56 bg-white dark:bg-[#1f1f1f] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
                 >
-                  <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ auth.user?.name || 'User' }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{{ auth.user?.email || '' }}</p>
+                  <div
+                    class="px-4 py-3 border-b border-gray-100 dark:border-gray-700"
+                  >
+                    <p
+                      class="text-sm font-semibold text-gray-900 dark:text-white truncate"
+                    >
+                      {{ auth.user?.name || "User" }}
+                    </p>
+                    <p
+                      class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5"
+                    >
+                      {{ auth.user?.email || "" }}
+                    </p>
                   </div>
                   <div class="p-2">
                     <RouterLink
@@ -254,19 +256,41 @@ onBeforeUnmount(() => {
                       @click="isProfileMenuOpen = false"
                       class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
                       History
                     </RouterLink>
                   </div>
-                  <div class="border-t border-gray-100 dark:border-gray-700 p-2">
+                  <div
+                    class="border-t border-gray-100 dark:border-gray-700 p-2"
+                  >
                     <button
                       @click="handleLogout"
                       class="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
                     >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                        />
                       </svg>
                       Log out
                     </button>
@@ -298,7 +322,9 @@ onBeforeUnmount(() => {
           <button
             @click="toggleTheme"
             class="p-2.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none cursor-pointer"
-            :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+            :aria-label="
+              isDark ? 'Switch to light mode' : 'Switch to dark mode'
+            "
           >
             <svg
               v-if="isDark"
@@ -335,7 +361,12 @@ onBeforeUnmount(() => {
             class="p-2.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none cursor-pointer"
             :aria-label="isMobileMenuOpen ? 'Close menu' : 'Open menu'"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 v-if="!isMobileMenuOpen"
                 stroke-linecap="round"
@@ -375,12 +406,18 @@ onBeforeUnmount(() => {
             v-if="auth.isAuthenticated()"
             class="flex items-center gap-3 pb-4 mb-4 border-b border-gray-200 dark:border-gray-700"
           >
-            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white font-bold">
-              {{ (auth.user?.name || 'U').charAt(0).toUpperCase() }}
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white font-bold"
+            >
+              {{ (auth.user?.name || "U").charAt(0).toUpperCase() }}
             </div>
             <div>
-              <p class="font-semibold text-gray-900 dark:text-white">{{ auth.user?.name || 'User' }}</p>
-              <p class="text-sm text-gray-500 dark:text-gray-400">{{ auth.user?.email || '' }}</p>
+              <p class="font-semibold text-gray-900 dark:text-white">
+                {{ auth.user?.name || "User" }}
+              </p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                {{ auth.user?.email || "" }}
+              </p>
             </div>
           </div>
 
@@ -390,10 +427,23 @@ onBeforeUnmount(() => {
               to="/"
               @click="closeMobileMenu"
               class="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              :class="{ '!bg-cyan-50 dark:!bg-cyan-900/20 !text-cyan-600 dark:!text-cyan-400': route.path === '/' && !route.query.mode }"
+              :class="{
+                '!bg-cyan-50 dark:!bg-cyan-900/20 !text-cyan-600 dark:!text-cyan-400':
+                  route.path === '/' && !route.query.mode,
+              }"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                />
               </svg>
               Home
             </RouterLink>
@@ -405,8 +455,18 @@ onBeforeUnmount(() => {
               class="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               active-class="!bg-cyan-50 dark:!bg-cyan-900/20 !text-cyan-600 dark:!text-cyan-400"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               History
             </RouterLink>
@@ -417,22 +477,44 @@ onBeforeUnmount(() => {
               class="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               active-class="!bg-cyan-50 dark:!bg-cyan-900/20 !text-cyan-600 dark:!text-cyan-400"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               About
             </RouterLink>
           </nav>
 
           <!-- Auth Actions -->
-          <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+          <div
+            class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2"
+          >
             <template v-if="auth.isAuthenticated()">
               <button
                 @click="handleLogout"
                 class="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-xl border-2 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
                 </svg>
                 Log out
               </button>
