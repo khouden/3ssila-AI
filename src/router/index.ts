@@ -7,6 +7,9 @@ import HomeView from "../views/HomeView.vue";
 import LoginView from "../views/LoginView.vue";
 import SignupView from "../views/SignupView.vue";
 import HistoryView from "../views/HistoryView.vue";
+import AboutView from "../views/AboutView.vue";
+import PrivacyPolicyView from "../views/PrivacyPolicyView.vue";
+import TermsOfServiceView from "../views/TermsOfServiceView.vue";
 import { auth } from "../stores/auth";
 
 const routes: RouteRecordRaw[] = [
@@ -24,6 +27,21 @@ const routes: RouteRecordRaw[] = [
     path: "/signup",
     name: "signup",
     component: SignupView as any,
+  },
+  {
+    path: "/about",
+    name: "about",
+    component: AboutView as any,
+  },
+  {
+    path: "/privacy",
+    name: "privacy",
+    component: PrivacyPolicyView as any,
+  },
+  {
+    path: "/terms",
+    name: "terms",
+    component: TermsOfServiceView as any,
   },
   {
     path: "/history",

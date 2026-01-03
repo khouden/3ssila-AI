@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import { RouterView } from "vue-router";
 import AppHeader from "./components/AppHeader.vue";
+import AppFooter from "./components/AppFooter.vue";
 import ToastNotification from "./components/ToastNotification.vue";
 </script>
 
 <template>
-  <AppHeader />
+  <div class="flex flex-col min-h-screen">
+    <AppHeader />
 
-  <main>
-    <RouterView />
-  </main>
+    <main class="flex-1">
+      <RouterView />
+    </main>
 
-  <ToastNotification />
+    <AppFooter />
+    <ToastNotification />
+  </div>
 </template>
 
 <style scoped>
