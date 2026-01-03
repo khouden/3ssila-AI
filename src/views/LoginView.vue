@@ -39,18 +39,20 @@ const handleAuth = async () => {
 
 <template>
   <div
-    class="min-h-screen flex flex-col items-center justify-center bg-white px-4 sm:px-6 lg:px-8"
+    class="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#ffffff09_1px,transparent_1px),linear-gradient(to_bottom,#ffffff09_1px,transparent_1px)] bg-[size:24px_24px] px-4 sm:px-6 lg:px-8"
   >
-    <div class="max-w-[400px] w-full space-y-8">
+    <div
+      class="max-w-[400px] w-full space-y-8 bg-white dark:bg-[#1a1a1a] p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800"
+    >
       <div class="text-center">
-        <h2 class="text-3xl font-bold text-gray-900">Log in</h2>
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Log in</h2>
       </div>
 
       <form class="mt-8 space-y-5" @submit.prevent="handleAuth">
         <div>
           <label
             for="email"
-            class="block text-sm font-medium text-gray-700 mb-1"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
             Email
           </label>
@@ -59,7 +61,7 @@ const handleAuth = async () => {
             v-model="email"
             type="email"
             placeholder="Type your email"
-            class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
+            class="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
           />
         </div>
 
@@ -67,13 +69,13 @@ const handleAuth = async () => {
           <div class="flex items-center justify-between mb-1">
             <label
               for="password"
-              class="block text-sm font-medium text-gray-700"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
               Password
             </label>
             <a
               href="#"
-              class="text-sm font-medium text-gray-600 hover:text-gray-900 hover:underline decoration-1 underline-offset-2"
+              class="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:underline decoration-1 underline-offset-2"
             >
               Forgot password?
             </a>
@@ -83,7 +85,7 @@ const handleAuth = async () => {
             v-model="password"
             type="password"
             placeholder="Type your password"
-            class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
+            class="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
           />
         </div>
 
@@ -112,11 +114,11 @@ const handleAuth = async () => {
       </form>
 
       <div class="text-center mt-6">
-        <p class="text-sm text-gray-500">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
           Don't have an account?
           <button
             @click="router.push('/signup')"
-            class="font-medium text-gray-900 hover:underline ml-1 cursor-pointer cursor-pointer"
+            class="font-medium text-gray-900 dark:text-white hover:underline ml-1 cursor-pointer"
           >
             Sign Up
           </button>

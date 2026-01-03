@@ -35,12 +35,16 @@ const handleSignup = async () => {
 
 <template>
   <div
-    class="min-h-screen flex flex-col items-center justify-center bg-white px-4 sm:px-6 lg:px-8"
+    class="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#ffffff09_1px,transparent_1px),linear-gradient(to_bottom,#ffffff09_1px,transparent_1px)] bg-[size:24px_24px] px-4 sm:px-6 lg:px-8"
   >
-    <div class="max-w-[400px] w-full space-y-8">
+    <div
+      class="max-w-[400px] w-full space-y-8 bg-white dark:bg-[#1a1a1a] p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800"
+    >
       <div class="text-center">
-        <h2 class="text-3xl font-bold text-gray-900">Create an account</h2>
-        <p class="mt-2 text-sm text-gray-600">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
+          Create an account
+        </h2>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
           Start humanizing your text today
         </p>
       </div>
@@ -49,7 +53,7 @@ const handleSignup = async () => {
         <div>
           <label
             for="name"
-            class="block text-sm font-medium text-gray-700 mb-1"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
             Name
           </label>
@@ -59,14 +63,14 @@ const handleSignup = async () => {
             type="text"
             placeholder="Type your name"
             required
-            class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
+            class="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
           />
         </div>
 
         <div>
           <label
             for="email"
-            class="block text-sm font-medium text-gray-700 mb-1"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
             Email
           </label>
@@ -76,14 +80,14 @@ const handleSignup = async () => {
             type="email"
             placeholder="Type your email"
             required
-            class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
+            class="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
           />
         </div>
 
         <div>
           <label
             for="password"
-            class="block text-sm font-medium text-gray-700 mb-1"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
             Password
           </label>
@@ -93,7 +97,7 @@ const handleSignup = async () => {
             type="password"
             placeholder="Create a password"
             required
-            class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
+            class="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
           />
         </div>
 
@@ -122,11 +126,11 @@ const handleSignup = async () => {
       </form>
 
       <div class="text-center mt-6">
-        <p class="text-sm text-gray-500">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
           Already have an account?
           <RouterLink
             to="/login"
-            class="font-medium text-gray-900 hover:underline ml-1"
+            class="font-medium text-gray-900 dark:text-white hover:underline ml-1"
           >
             Log in
           </RouterLink>

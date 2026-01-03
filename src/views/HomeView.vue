@@ -1,19 +1,53 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, computed, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import api from "../services/api";
 import { auth } from "../stores/auth";
 import { toast } from "../stores/toast";
 
 const router = useRouter();
+const route = useRoute();
+
+// --- Languages with country codes for flag icons ---
+const languages = [
+  { name: "French", code: "fr" },
+  { name: "English", code: "gb" },
+  { name: "Spanish", code: "es" },
+  { name: "German", code: "de" },
+  { name: "Italian", code: "it" },
+  { name: "Portuguese", code: "pt" },
+  { name: "Chinese", code: "cn" },
+  { name: "Japanese", code: "jp" },
+  { name: "Korean", code: "kr" },
+  { name: "Arabic", code: "sa" },
+  { name: "Hindi", code: "in" },
+  { name: "Russian", code: "ru" },
+];
 
 // --- State ---
 const inputText = ref("");
 const resultText = ref("");
 const mode = ref<"translate" | "summarize">("translate");
 const targetLanguage = ref("French");
+const isLanguageDropdownOpen = ref(false);
 const isLoading = ref(false);
 const CHARACTER_LIMIT = 250;
+
+// --- Computed ---
+const selectedLanguage = computed(() => {
+  return (
+    languages.find((lang) => lang.name === targetLanguage.value) || languages[0]
+  );
+});
+
+// --- Lifecycle ---
+onMounted(() => {
+  const queryMode = route.query.mode as string;
+  if (queryMode === "translate" || queryMode === "summarize") {
+    mode.value = queryMode;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+});
 
 // --- Computed ---
 const characterCount = computed(() => {
@@ -135,23 +169,14 @@ const goToSignup = () => {
               >Target:</label
             >
             <div class="relative">
-              <select
-                v-model="targetLanguage"
-                class="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-1.5 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 cursor-pointer"
+              <button
+                @click="isLanguageDropdownOpen = !isLanguageDropdownOpen"
+                @blur="setTimeout(() => (isLanguageDropdownOpen = false), 150)"
+                class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-1.5 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 cursor-pointer"
               >
-                <option value="French">🇫🇷 French</option>
-                <option value="English">🇬🇧 English</option>
-                <option value="Spanish">🇪🇸 Spanish</option>
-                <option value="German">🇩🇪 German</option>
-                <option value="Italian">🇮🇹 Italian</option>
-                <option value="Portuguese">🇵🇹 Portuguese</option>
-                <option value="Chinese">🇨🇳 Chinese</option>
-                <option value="Japanese">🇯🇵 Japanese</option>
-                <option value="Korean">🇰🇷 Korean</option>
-                <option value="Arabic">🇸🇦 Arabic</option>
-                <option value="Hindi">🇮🇳 Hindi</option>
-                <option value="Russian">🇷🇺 Russian</option>
-              </select>
+                <span :class="`fi fi-${selectedLanguage.code}`"></span>
+                <span>{{ selectedLanguage.name }}</span>
+              </button>
               <div
                 class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500"
               >
@@ -164,6 +189,28 @@ const goToSignup = () => {
                     d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
                   />
                 </svg>
+              </div>
+              <!-- Dropdown -->
+              <div
+                v-if="isLanguageDropdownOpen"
+                class="absolute top-full left-0 mt-1 w-44 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto"
+              >
+                <button
+                  v-for="lang in languages"
+                  :key="lang.code"
+                  @mousedown.prevent="
+                    targetLanguage = lang.name;
+                    isLanguageDropdownOpen = false;
+                  "
+                  class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                  :class="{
+                    'bg-cyan-50 dark:bg-cyan-900/30':
+                      targetLanguage === lang.name,
+                  }"
+                >
+                  <span :class="`fi fi-${lang.code}`"></span>
+                  <span>{{ lang.name }}</span>
+                </button>
               </div>
             </div>
           </div>
