@@ -3,6 +3,7 @@ import { RouterView } from "vue-router";
 import AppHeader from "./components/AppHeader.vue";
 import AppFooter from "./components/AppFooter.vue";
 import ToastNotification from "./components/ToastNotification.vue";
+import ConfirmDialog from "./components/ConfirmDialog.vue";
 </script>
 
 <template>
@@ -15,6 +16,7 @@ import ToastNotification from "./components/ToastNotification.vue";
 
     <AppFooter />
     <ToastNotification />
+    <ConfirmDialog />
   </div>
 </template>
 

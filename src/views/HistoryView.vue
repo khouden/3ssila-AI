@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import api from "../services/api";
 import { auth } from "../stores/auth";
 import { toast } from "../stores/toast";
+import { confirm } from "../stores/confirm";
 
 const router = useRouter();
 
@@ -17,7 +18,6 @@ const totalPages = ref(1);
 const totalItems = ref(0);
 const isDark = ref(true);
 const selectedItems = ref<Set<string>>(new Set());
-const deleteConfirmId = ref<string | null>(null);
 const isDeleting = ref(false);
 
 // --- Computed ---
@@ -136,13 +136,22 @@ const toggleSelect = (itemId: string) => {
 };
 
 const deleteItem = async (itemId: string) => {
-  isDeleting.value = true;
-  deleteConfirmId.value = null;
-  try {
-    // Find the item to determine its type
-    const item = history.value.find((h) => h.id === itemId);
-    const isSummary = item?.action_type === "summarize";
+  const item = history.value.find((h) => h.id === itemId);
+  const isSummary = item?.action_type === "summarize";
+  const itemType = isSummary ? "summary" : "translation";
 
+  const confirmed = await confirm.show({
+    title: "Delete Item",
+    message: `Are you sure you want to delete this ${itemType}? This action cannot be undone.`,
+    confirmText: "Delete",
+    cancelText: "Cancel",
+    type: "danger",
+  });
+
+  if (!confirmed) return;
+
+  isDeleting.value = true;
+  try {
     if (isSummary) {
       await api.deleteSummary(itemId);
     } else {
@@ -160,7 +169,13 @@ const deleteItem = async (itemId: string) => {
 const deleteSelected = async () => {
   if (selectedItems.value.size === 0) return;
 
-  const confirmed = confirm(`Delete ${selectedItems.value.size} item(s)?`);
+  const confirmed = await confirm.show({
+    title: "Delete Items",
+    message: `Are you sure you want to delete ${selectedItems.value.size} item(s)? This action cannot be undone.`,
+    confirmText: "Delete",
+    cancelText: "Cancel",
+    type: "danger",
+  });
   if (!confirmed) return;
 
   isDeleting.value = true;
@@ -483,26 +498,10 @@ onMounted(() => {
 
               <!-- Delete Button -->
               <div class="flex items-center gap-2 sm:w-auto">
-                <div v-if="deleteConfirmId === item.id" class="flex gap-2">
-                  <button
-                    @click="deleteItem(item.id)"
-                    :disabled="isDeleting"
-                    class="px-3 py-1 rounded-lg text-xs font-medium bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 transition-colors"
-                  >
-                    Confirm
-                  </button>
-                  <button
-                    @click="deleteConfirmId = null"
-                    :disabled="isDeleting"
-                    class="px-3 py-1 rounded-lg text-xs font-medium bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 hover:bg-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
                 <button
-                  v-else
-                  @click="deleteConfirmId = item.id"
-                  class="px-3 py-1 rounded-lg text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors whitespace-nowrap"
+                  @click="deleteItem(item.id)"
+                  :disabled="isDeleting"
+                  class="px-3 py-1 rounded-lg text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 disabled:opacity-50 transition-colors whitespace-nowrap"
                 >
                   Delete
                 </button>
