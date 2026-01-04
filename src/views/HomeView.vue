@@ -96,7 +96,7 @@ const handleSubmit = async () => {
       error?.response?.data?.detail ||
       error?.message ||
       "Error: Could not process text. Please try again.";
-    resultText.value = detail;
+    toast.error(detail);
   } finally {
     isLoading.value = false;
   }
