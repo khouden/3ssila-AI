@@ -139,7 +139,11 @@ const deleteItem = async (itemId: string) => {
   isDeleting.value = true;
   deleteConfirmId.value = null;
   try {
-    if (activeTab.value === "summaries") {
+    // Find the item to determine its type
+    const item = history.value.find((h) => h.id === itemId);
+    const isSummary = item?.action_type === "summarize";
+
+    if (isSummary) {
       await api.deleteSummary(itemId);
     } else {
       await api.deleteTranslation(itemId);
@@ -163,7 +167,13 @@ const deleteSelected = async () => {
   const itemsToDelete = Array.from(selectedItems.value);
 
   try {
-    await Promise.all(itemsToDelete.map((id) => api.deleteTranslation(id)));
+    await Promise.all(
+      itemsToDelete.map((id) => {
+        const item = history.value.find((h) => h.id === id);
+        const isSummary = item?.action_type === "summarize";
+        return isSummary ? api.deleteSummary(id) : api.deleteTranslation(id);
+      })
+    );
     selectedItems.value.clear();
     await fetchHistory();
   } catch (error) {
