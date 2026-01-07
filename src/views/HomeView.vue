@@ -31,6 +31,8 @@ const mode = ref<"translate" | "summarize">("translate");
 const targetLanguage = ref("French");
 const isLanguageDropdownOpen = ref(false);
 const isLoading = ref(false);
+const isExtracting = ref(false);
+const fileInput = ref<HTMLInputElement | null>(null);
 const CHARACTER_LIMIT = 250;
 
 // --- Computed ---
@@ -111,6 +113,49 @@ const copyToClipboard = () => {
 
 const goToSignup = () => {
   router.push("/signup");
+};
+
+const triggerFileUpload = () => {
+  fileInput.value?.click();
+};
+
+const handleFileUpload = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (!file) return;
+
+  // Validation 1: Check file size (1MB limit)
+  if (file.size > 1024 * 1024) {
+    toast.error("File size exceeds 1MB limit");
+    target.value = "";
+    return;
+  }
+
+  // Validation 2: Check file type
+  const validTypes = [
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "image/png",
+    "image/jpeg",
+  ];
+  if (!validTypes.includes(file.type)) {
+    toast.error("Invalid file type. Please upload PDF, DOCX, PNG, or JPEG.");
+    target.value = "";
+    return;
+  }
+
+  isExtracting.value = true;
+  try {
+    const response = await api.extractTextFromFile(file);
+    const parsedText = response.data?.ParsedResults?.[0]?.ParsedText || "";
+    inputText.value = parsedText;
+  } catch (error: any) {
+    console.error(error);
+    toast.error("Failed to extract text from file.");
+  } finally {
+    isExtracting.value = false;
+    target.value = "";
+  }
 };
 
 const closeLanguageDropdown = () => {
@@ -224,6 +269,62 @@ const closeLanguageDropdown = () => {
           <div
             class="flex-1 p-6 flex flex-col relative border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a]"
           >
+            <!-- Hidden file input -->
+            <input
+              type="file"
+              ref="fileInput"
+              @change="handleFileUpload"
+              accept=".pdf,.docx,.jpg,.png"
+              class="hidden"
+            />
+
+            <!-- Upload button -->
+            <button
+              @click="triggerFileUpload"
+              :disabled="isExtracting"
+              class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors cursor-pointer disabled:cursor-not-allowed"
+              title="Upload file (PDF, DOCX, PNG, JPEG)"
+            >
+              <!-- Spinning loader when extracting -->
+              <svg
+                v-if="isExtracting"
+                class="animate-spin h-5 w-5"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <!-- Paperclip icon -->
+              <svg
+                v-else
+                class="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                ></path>
+              </svg>
+            </button>
+
             <textarea
               v-model="inputText"
               placeholder="Insert your text here..."
