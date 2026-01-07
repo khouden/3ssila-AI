@@ -32,6 +32,7 @@ const targetLanguage = ref("French");
 const isLanguageDropdownOpen = ref(false);
 const isLoading = ref(false);
 const isExtracting = ref(false);
+const isDragging = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
 const CHARACTER_LIMIT = 250;
 
@@ -119,15 +120,10 @@ const triggerFileUpload = () => {
   fileInput.value?.click();
 };
 
-const handleFileUpload = async (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-  if (!file) return;
-
+const processFile = async (file: File) => {
   // Validation 1: Check file size (1MB limit)
   if (file.size > 1024 * 1024) {
     toast.error("File size exceeds 1MB limit");
-    target.value = "";
     return;
   }
 
@@ -140,7 +136,6 @@ const handleFileUpload = async (event: Event) => {
   ];
   if (!validTypes.includes(file.type)) {
     toast.error("Invalid file type. Please upload PDF, DOCX, PNG, or JPEG.");
-    target.value = "";
     return;
   }
 
@@ -154,7 +149,33 @@ const handleFileUpload = async (event: Event) => {
     toast.error("Failed to extract text from file.");
   } finally {
     isExtracting.value = false;
-    target.value = "";
+  }
+};
+
+const handleFileUpload = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (!file) return;
+  await processFile(file);
+  target.value = "";
+};
+
+const handleDragOver = (event: DragEvent) => {
+  event.preventDefault();
+  isDragging.value = true;
+};
+
+const handleDragLeave = (event: DragEvent) => {
+  event.preventDefault();
+  isDragging.value = false;
+};
+
+const handleDrop = async (event: DragEvent) => {
+  event.preventDefault();
+  isDragging.value = false;
+  const file = event.dataTransfer?.files?.[0];
+  if (file) {
+    await processFile(file);
   }
 };
 
@@ -267,8 +288,40 @@ const closeLanguageDropdown = () => {
 
         <div class="flex-1 flex flex-col md:flex-row min-h-0">
           <div
-            class="flex-1 p-6 flex flex-col relative border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a]"
+            class="flex-1 p-6 flex flex-col relative border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] transition-colors"
+            :class="{
+              'bg-cyan-50 dark:bg-cyan-900/20 border-cyan-400 border-2 border-dashed':
+                isDragging,
+            }"
+            @dragover="handleDragOver"
+            @dragleave="handleDragLeave"
+            @drop="handleDrop"
           >
+            <!-- Drag overlay -->
+            <div
+              v-if="isDragging"
+              class="absolute inset-0 flex items-center justify-center bg-cyan-50/80 dark:bg-cyan-900/40 z-20 pointer-events-none"
+            >
+              <div class="text-center">
+                <svg
+                  class="w-12 h-12 mx-auto text-cyan-500 mb-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  ></path>
+                </svg>
+                <p class="text-cyan-600 dark:text-cyan-400 font-medium">
+                  Drop your file here
+                </p>
+              </div>
+            </div>
+
             <!-- Hidden file input -->
             <input
               type="file"
