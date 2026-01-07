@@ -64,6 +64,9 @@ let recognition: any = null;
 const isSpeechRecognitionSupported =
   "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
 
+// Check if Speech Synthesis is supported
+const isSpeechSynthesisSupported = "speechSynthesis" in window;
+
 // --- Computed ---
 const selectedLanguage = computed(() => {
   return (
@@ -695,7 +698,7 @@ const readResult = () => {
               <div class="flex items-center gap-3">
                 <!-- Speaker button -->
                 <button
-                  v-if="resultText && 'speechSynthesis' in window"
+                  v-if="resultText && isSpeechSynthesisSupported"
                   @click="readResult"
                   :class="[
                     'flex items-center gap-1 text-xs font-medium transition-colors cursor-pointer',
