@@ -10,11 +10,32 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("jwt_token");
-  if (token) {
+  const expiry = Number(localStorage.getItem("jwt_expiry") || "0");
+  const isValid = token && expiry && Date.now() < expiry;
+  if (isValid) {
     config.headers.Authorization = `Bearer ${token}`;
+  } else {
+    if (token && expiry && Date.now() >= expiry) {
+      localStorage.removeItem("jwt_token");
+      localStorage.removeItem("jwt_expiry");
+      localStorage.removeItem("user_data");
+    }
   }
   return config;
 });
+
+// Clear credentials on unauthorized responses
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error?.response?.status === 401) {
+      localStorage.removeItem("jwt_token");
+      localStorage.removeItem("jwt_expiry");
+      localStorage.removeItem("user_data");
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default {
   // AI Services

@@ -34,7 +34,6 @@ const languages = [
   { name: "Thai", code: "th" },
   { name: "Indonesian", code: "id" },
   { name: "Malay", code: "my" },
-  { name: "Hebrew", code: "il" },
   { name: "Czech", code: "cz" },
   { name: "Romanian", code: "ro" },
   { name: "Hungarian", code: "hu" },
