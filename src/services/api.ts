@@ -78,4 +78,14 @@ export default {
   deleteSummary(id: string) {
     return apiClient.delete(`/history/summaries/${id}`);
   },
+
+  // OCR Service
+  extractTextFromFile(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("apikey", import.meta.env.VITE_OCR_API_KEY);
+    formData.append("language", "eng");
+
+    return axios.post("https://api.ocr.space/parse/image", formData);
+  },
 };
