@@ -276,10 +276,16 @@ const toggleMicrophone = async () => {
       isListening.value = false;
       recognition = null;
 
+      // Check if the issue is related to insecure context
+      const isSecure =
+        window.location.protocol === "https:" ||
+        window.location.hostname === "localhost";
+
       // Provide user-friendly error messages
       const errorMessages: { [key: string]: string } = {
-        network:
-          "Speech recognition service unavailable. This may be due to browser limitations. Try using Chrome on a secure (HTTPS) connection.",
+        network: isSecure
+          ? "Speech recognition service unavailable. The browser's speech service may be down. Please try again later."
+          : "Speech recognition requires HTTPS. Your site is running on HTTP. Deploy to a secure (HTTPS) server or use localhost for testing.",
         "not-allowed":
           "Microphone access denied. Please allow microphone permissions in your browser settings.",
         "no-speech": "No speech detected. Please try again.",
@@ -288,8 +294,9 @@ const toggleMicrophone = async () => {
         aborted: "Speech recognition was cancelled.",
         "language-not-supported":
           "The selected language is not supported for speech recognition.",
-        "service-not-allowed":
-          "Speech recognition service is not allowed. Please check your browser settings.",
+        "service-not-allowed": isSecure
+          ? "Speech recognition service is not allowed. Please check your browser settings."
+          : "Speech recognition requires HTTPS. Please deploy to a secure server.",
       };
 
       const message =
