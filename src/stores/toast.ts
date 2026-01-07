@@ -14,7 +14,7 @@ export const toast = reactive({
   nextId: 1,
 
   // Show a toast notification
-  show(message: string, type: ToastType = "info", duration: number = 3000) {
+  show(message: string, type: ToastType = "info", duration: number = 8000) {
     const id = this.nextId++;
     const newToast: Toast = {
       id,

@@ -55,6 +55,15 @@ const isDragging = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
 const CHARACTER_LIMIT = 250;
 
+// Voice capabilities
+const isListening = ref(false);
+const isSpeaking = ref(false);
+let recognition: any = null;
+
+// Check if Speech Recognition is supported
+const isSpeechRecognitionSupported =
+  "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
+
 // --- Computed ---
 const selectedLanguage = computed(() => {
   return (
@@ -200,6 +209,179 @@ const handleDrop = async (event: DragEvent) => {
 
 const closeLanguageDropdown = () => {
   setTimeout(() => (isLanguageDropdownOpen.value = false), 150);
+};
+
+// Voice handler: Toggle microphone for speech recognition
+const toggleMicrophone = async () => {
+  if (!isSpeechRecognitionSupported) {
+    toast.error("Speech recognition is not supported in your browser");
+    return;
+  }
+
+  // Stop if already listening
+  if (isListening.value && recognition) {
+    try {
+      recognition.stop();
+    } catch (e) {
+      // Ignore errors when stopping
+    }
+    recognition = null;
+    isListening.value = false;
+    return;
+  }
+
+  // Check microphone permission first
+  try {
+    await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (error: any) {
+    console.error("Microphone permission error:", error);
+    if (error.name === "NotAllowedError") {
+      toast.error(
+        "Microphone access denied. Please allow microphone permissions."
+      );
+    } else if (error.name === "NotFoundError") {
+      toast.error("No microphone found. Please connect a microphone.");
+    } else {
+      toast.error("Could not access microphone: " + error.message);
+    }
+    return;
+  }
+
+  // Create a fresh recognition instance each time
+  try {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      isListening.value = true;
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      inputText.value += (inputText.value ? " " : "") + transcript;
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error:", event.error);
+      isListening.value = false;
+      recognition = null;
+
+      // Provide user-friendly error messages
+      const errorMessages: { [key: string]: string } = {
+        network:
+          "Speech recognition service unavailable. This may be due to browser limitations. Try using Chrome on a secure (HTTPS) connection.",
+        "not-allowed":
+          "Microphone access denied. Please allow microphone permissions in your browser settings.",
+        "no-speech": "No speech detected. Please try again.",
+        "audio-capture":
+          "No microphone found or microphone is being used by another application.",
+        aborted: "Speech recognition was cancelled.",
+        "language-not-supported":
+          "The selected language is not supported for speech recognition.",
+        "service-not-allowed":
+          "Speech recognition service is not allowed. Please check your browser settings.",
+      };
+
+      const message =
+        errorMessages[event.error] ||
+        `Speech recognition error: ${event.error}`;
+
+      // Only show error for significant issues
+      if (event.error !== "no-speech" && event.error !== "aborted") {
+        toast.error(message);
+      }
+    };
+
+    recognition.onend = () => {
+      isListening.value = false;
+      recognition = null;
+    };
+
+    // Start recognition
+    recognition.start();
+  } catch (error: any) {
+    console.error("Failed to start recognition:", error);
+    isListening.value = false;
+    recognition = null;
+    toast.error("Failed to start speech recognition. Please try again.");
+  }
+};
+
+// Voice handler: Read result text aloud
+const readResult = () => {
+  if (!("speechSynthesis" in window)) {
+    toast.error("Speech synthesis is not supported in your browser");
+    return;
+  }
+
+  if (isSpeaking.value) {
+    window.speechSynthesis.cancel();
+    isSpeaking.value = false;
+  } else {
+    const utterance = new SpeechSynthesisUtterance(resultText.value);
+
+    // Map target language to speech synthesis language codes
+    const languageMap: { [key: string]: string } = {
+      French: "fr-FR",
+      English: "en-US",
+      Spanish: "es-ES",
+      German: "de-DE",
+      Italian: "it-IT",
+      Portuguese: "pt-PT",
+      Chinese: "zh-CN",
+      Japanese: "ja-JP",
+      Korean: "ko-KR",
+      Arabic: "ar-SA",
+      Hindi: "hi-IN",
+      Russian: "ru-RU",
+      Dutch: "nl-NL",
+      Polish: "pl-PL",
+      Swedish: "sv-SE",
+      Norwegian: "nb-NO",
+      Danish: "da-DK",
+      Finnish: "fi-FI",
+      Greek: "el-GR",
+      Turkish: "tr-TR",
+      Vietnamese: "vi-VN",
+      Thai: "th-TH",
+      Indonesian: "id-ID",
+      Malay: "ms-MY",
+      Czech: "cs-CZ",
+      Romanian: "ro-RO",
+      Hungarian: "hu-HU",
+      Ukrainian: "uk-UA",
+      Bengali: "bn-BD",
+      Urdu: "ur-PK",
+      Swahili: "sw-KE",
+    };
+
+    utterance.lang = languageMap[targetLanguage.value] || "en-US";
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+
+    utterance.onstart = () => {
+      isSpeaking.value = true;
+    };
+
+    utterance.onend = () => {
+      isSpeaking.value = false;
+    };
+
+    utterance.onerror = (event: any) => {
+      console.error("Speech synthesis error:", event.error);
+      isSpeaking.value = false;
+      toast.error("Speech synthesis error: " + event.error);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  }
 };
 </script>
 
@@ -350,6 +532,34 @@ const closeLanguageDropdown = () => {
               class="hidden"
             />
 
+            <!-- Microphone button -->
+            <button
+              v-if="isSpeechRecognitionSupported"
+              @click="toggleMicrophone"
+              :class="[
+                'absolute top-4 right-16 p-2 rounded-full transition-colors cursor-pointer',
+                isListening
+                  ? 'bg-red-500 text-white animate-pulse hover:bg-red-600'
+                  : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400',
+              ]"
+              :title="isListening ? 'Stop recording' : 'Start voice input'"
+            >
+              <svg
+                class="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                ></path>
+              </svg>
+            </button>
+
             <!-- Upload button -->
             <button
               @click="triggerFileUpload"
@@ -482,26 +692,80 @@ const closeLanguageDropdown = () => {
                 >{{ resultCharacterCount }} characters</span
               >
 
-              <button
-                v-if="resultText"
-                @click="copyToClipboard"
-                class="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-cyan-600 transition-colors cursor-pointer"
-              >
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <div class="flex items-center gap-3">
+                <!-- Speaker button -->
+                <button
+                  v-if="resultText && 'speechSynthesis' in window"
+                  @click="readResult"
+                  :class="[
+                    'flex items-center gap-1 text-xs font-medium transition-colors cursor-pointer',
+                    isSpeaking
+                      ? 'text-cyan-600 dark:text-cyan-400'
+                      : 'text-gray-500 hover:text-cyan-600',
+                  ]"
+                  :title="isSpeaking ? 'Stop reading' : 'Read aloud'"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
-                  ></path>
-                </svg>
-                Copy
-              </button>
+                  <!-- Stop icon when speaking -->
+                  <svg
+                    v-if="isSpeaking"
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 10h6v4H9z"
+                    ></path>
+                  </svg>
+                  <!-- Volume icon when idle -->
+                  <svg
+                    v-else
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                    ></path>
+                  </svg>
+                  {{ isSpeaking ? "Stop" : "Listen" }}
+                </button>
+
+                <!-- Copy button -->
+                <button
+                  v-if="resultText"
+                  @click="copyToClipboard"
+                  class="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-cyan-600 transition-colors cursor-pointer"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                    ></path>
+                  </svg>
+                  Copy
+                </button>
+              </div>
             </div>
           </div>
         </div>
