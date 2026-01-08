@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  const BACKEND_URL = "http://[REDACTED]";
+  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
 
   // Extract the path from the URL (remove /api prefix)
   const targetPath = req.url.replace(/^\/api/, "");
@@ -45,11 +45,6 @@ export default async function handler(req, res) {
         }
       }
     }
-
-    console.log("Proxying to:", targetUrl);
-    console.log("Method:", fetchOptions.method);
-    console.log("Headers:", fetchOptions.headers);
-    console.log("Body:", fetchOptions.body);
 
     const response = await fetch(targetUrl, fetchOptions);
     const data = await response.text();
