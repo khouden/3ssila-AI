@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import api from "../services/api";
 import { auth } from "../stores/auth";
@@ -65,6 +65,41 @@ const isDragging = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
 const CHARACTER_LIMIT = 250;
 
+// LocalStorage keys for persistence
+const STORAGE_KEYS = {
+  inputText: "3ssila_input_text",
+  resultText: "3ssila_result_text",
+  mode: "3ssila_mode",
+  targetLanguage: "3ssila_target_language",
+};
+
+// Helper functions for localStorage persistence
+const saveToStorage = (key: string, value: string) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch (e) {
+    console.warn("Failed to save to localStorage:", e);
+  }
+};
+
+const loadFromStorage = (key: string): string | null => {
+  try {
+    return localStorage.getItem(key);
+  } catch (e) {
+    console.warn("Failed to load from localStorage:", e);
+    return null;
+  }
+};
+
+const clearInputStorage = () => {
+  try {
+    localStorage.removeItem(STORAGE_KEYS.inputText);
+    localStorage.removeItem(STORAGE_KEYS.resultText);
+  } catch (e) {
+    console.warn("Failed to clear localStorage:", e);
+  }
+};
+
 // Voice capabilities
 const isListening = ref(false);
 const isSpeaking = ref(false);
@@ -117,6 +152,32 @@ onUnmounted(() => {
   document.removeEventListener("click", handleClickOutside);
 });
 
+// Watch for changes and persist to localStorage
+watch(inputText, (newValue) => {
+  if (newValue) {
+    saveToStorage(STORAGE_KEYS.inputText, newValue);
+  } else {
+    // When input is cleared, also clear result from storage
+    clearInputStorage();
+  }
+});
+
+watch(resultText, (newValue) => {
+  if (newValue) {
+    saveToStorage(STORAGE_KEYS.resultText, newValue);
+  } else {
+    localStorage.removeItem(STORAGE_KEYS.resultText);
+  }
+});
+
+watch(mode, (newValue) => {
+  saveToStorage(STORAGE_KEYS.mode, newValue);
+});
+
+watch(targetLanguage, (newValue) => {
+  saveToStorage(STORAGE_KEYS.targetLanguage, newValue);
+});
+
 // Speech capabilities are available (using Azure Cognitive Services)
 const isSpeechRecognitionSupported = true;
 const isSpeechSynthesisSupported = true;
@@ -166,14 +227,43 @@ onMounted(() => {
   const prefillResult = route.query.result as string;
   const prefillTargetLang = route.query.targetLang as string;
 
+  // Query params take priority over localStorage
   if (prefillText) {
     inputText.value = prefillText;
+  } else {
+    // Load from localStorage if no query params
+    const savedInput = loadFromStorage(STORAGE_KEYS.inputText);
+    if (savedInput) {
+      inputText.value = savedInput;
+    }
   }
+
   if (prefillResult) {
     resultText.value = prefillResult;
+  } else {
+    // Load from localStorage if no query params
+    const savedResult = loadFromStorage(STORAGE_KEYS.resultText);
+    if (savedResult) {
+      resultText.value = savedResult;
+    }
   }
+
   if (prefillTargetLang) {
     targetLanguage.value = prefillTargetLang;
+  } else {
+    // Load saved target language from localStorage
+    const savedTargetLang = loadFromStorage(STORAGE_KEYS.targetLanguage);
+    if (savedTargetLang && languages.some((l) => l.name === savedTargetLang)) {
+      targetLanguage.value = savedTargetLang;
+    }
+  }
+
+  // Load saved mode from localStorage (if not set by query)
+  if (!queryMode) {
+    const savedMode = loadFromStorage(STORAGE_KEYS.mode);
+    if (savedMode === "translate" || savedMode === "summarize") {
+      mode.value = savedMode;
+    }
   }
 
   // Clear the prefill query params from URL to avoid confusion on refresh
@@ -828,7 +918,11 @@ const handleExport = async (format: ExportFormat) => {
                 <!-- Clear input button -->
                 <button
                   v-if="inputText"
-                  @click="inputText = ''"
+                  @click="
+                    inputText = '';
+                    resultText = '';
+                    clearInputStorage();
+                  "
                   class="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-red-500 transition-colors cursor-pointer ml-2"
                   title="Clear input"
                 >
@@ -1167,7 +1261,10 @@ const handleExport = async (format: ExportFormat) => {
                 <!-- Clear button -->
                 <button
                   v-if="resultText"
-                  @click="resultText = ''"
+                  @click="
+                    resultText = '';
+                    localStorage.removeItem(STORAGE_KEYS.resultText);
+                  "
                   class="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-red-500 transition-colors cursor-pointer"
                   title="Clear result"
                 >
