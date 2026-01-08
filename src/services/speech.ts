@@ -205,17 +205,28 @@ export function stopSpeechToText(recognizer: sdk.SpeechRecognizer): void {
   }
 }
 
+export interface TextToSpeechCallbacks {
+  onError?: (error: string) => void;
+  onStarted?: () => void;
+  onCompleted?: () => void;
+}
+
+// Store for the current audio playback so it can be stopped
+let currentAudioContext: AudioContext | null = null;
+let currentAudioSource: AudioBufferSourceNode | null = null;
+
 /**
  * Initialize and perform text-to-speech
  * @param text - Text to be spoken
  * @param languageName - Language name (e.g., "French", "English")
- * @param onError - Error callback
+ * @param callbacks - Callback functions for synthesis events
+ * @returns Object with stop method to cancel playback
  */
-export async function textToSpeech(
+export function textToSpeech(
   text: string,
   languageName: string,
-  onError?: (error: string) => void
-): Promise<void> {
+  callbacks?: TextToSpeechCallbacks
+): { stop: () => void } | null {
   try {
     if (!speechKey || speechKey === "your_azure_speech_key_here") {
       throw new Error("Azure Speech API key is not configured");
@@ -233,24 +244,95 @@ export async function textToSpeech(
       "en-US-JennyNeural";
     speechConfig.speechSynthesisVoiceName = voiceName;
 
-    // Create speech synthesizer with default speaker output
-    const synthesizer = new sdk.SpeechSynthesizer(speechConfig);
+    // Use null audio config to get raw audio data instead of playing directly
+    const audioConfig = sdk.AudioConfig.fromStreamOutput(
+      sdk.AudioOutputStream.createPullStream()
+    );
+    const synthesizer = new sdk.SpeechSynthesizer(speechConfig, audioConfig);
 
-    return new Promise((resolve, reject) => {
-      synthesizer.speakTextAsync(text, (result) => {
+    // Notify when synthesis starts
+    synthesizer.synthesisStarted = () => {
+      if (callbacks?.onStarted) callbacks.onStarted();
+    };
+
+    synthesizer.speakTextAsync(
+      text,
+      async (result) => {
         if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
-          resolve();
+          try {
+            // Get the audio data
+            const audioData = result.audioData;
+
+            // Create audio context and play the audio
+            currentAudioContext = new AudioContext();
+            const audioBuffer = await currentAudioContext.decodeAudioData(
+              audioData.slice(0)
+            );
+
+            currentAudioSource = currentAudioContext.createBufferSource();
+            currentAudioSource.buffer = audioBuffer;
+            currentAudioSource.connect(currentAudioContext.destination);
+
+            // Set up completion callback
+            currentAudioSource.onended = () => {
+              if (callbacks?.onCompleted) callbacks.onCompleted();
+              currentAudioSource = null;
+              if (currentAudioContext) {
+                currentAudioContext.close();
+                currentAudioContext = null;
+              }
+            };
+
+            // Start playback
+            currentAudioSource.start(0);
+          } catch (playError) {
+            console.error("Audio playback error:", playError);
+            if (callbacks?.onError) callbacks.onError("Failed to play audio");
+          }
         } else if (result.reason === sdk.ResultReason.Canceled) {
-          const error = `Speech synthesis cancelled: ${result.errorDetails}`;
-          if (onError) onError(error);
-          reject(new Error(error));
+          const cancellation = sdk.CancellationDetails.fromResult(result);
+          const error = `Speech synthesis cancelled: ${cancellation.errorDetails}`;
+          if (callbacks?.onError) callbacks.onError(error);
         }
-      });
-    });
+        synthesizer.close();
+      },
+      (error) => {
+        const errorMessage =
+          error || "Failed to perform text-to-speech synthesis";
+        if (callbacks?.onError) callbacks.onError(errorMessage);
+        synthesizer.close();
+      }
+    );
+
+    // Return an object with a stop method
+    return {
+      stop: () => {
+        stopTextToSpeech();
+      },
+    };
   } catch (error: any) {
     const errorMessage =
       error.message || "Failed to perform text-to-speech synthesis";
-    if (onError) onError(errorMessage);
-    throw error;
+    if (callbacks?.onError) callbacks.onError(errorMessage);
+    return null;
+  }
+}
+
+/**
+ * Stop text-to-speech playback
+ */
+export function stopTextToSpeech(): void {
+  try {
+    if (currentAudioSource) {
+      currentAudioSource.stop();
+      currentAudioSource.disconnect();
+      currentAudioSource = null;
+    }
+    if (currentAudioContext) {
+      currentAudioContext.close();
+      currentAudioContext = null;
+    }
+  } catch (error) {
+    console.error("Failed to stop speech synthesis:", error);
   }
 }

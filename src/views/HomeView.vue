@@ -9,6 +9,7 @@ import {
   speechToText,
   stopSpeechToText,
   textToSpeech,
+  stopTextToSpeech,
 } from "../services/speech";
 import { exportResult, type ExportFormat } from "../services/export";
 import type { SpeechRecognizer } from "microsoft-cognitiveservices-speech-sdk";
@@ -67,8 +68,10 @@ const CHARACTER_LIMIT = 250;
 // Voice capabilities
 const isListening = ref(false);
 const isSpeaking = ref(false);
+const isPlaying = ref(false);
 const isProcessingSpeech = ref(false);
 let azureRecognizer: SpeechRecognizer | null = null;
+let azureSynthesizer: { stop: () => void } | null = null;
 const baseSpeechText = ref("");
 const interimTranscript = ref("");
 const showMicModal = ref(false);
@@ -464,19 +467,41 @@ const toggleMicrophone = async (languageName?: string) => {
 };
 
 // Voice handler: Read result text aloud
-const readResult = async () => {
+const readResult = () => {
+  // If already playing, stop the audio
+  if (isPlaying.value || isSpeaking.value) {
+    stopTextToSpeech();
+    azureSynthesizer = null;
+    isSpeaking.value = false;
+    isPlaying.value = false;
+    toast.info("Audio stopped");
+    return;
+  }
+
+  // Start speaking
   if (!isSpeaking.value) {
-    try {
-      isSpeaking.value = true;
-      await textToSpeech(resultText.value, targetLanguage.value, (error) => {
+    isSpeaking.value = true;
+    azureSynthesizer = textToSpeech(resultText.value, targetLanguage.value, {
+      onStarted: () => {
+        isPlaying.value = true;
+      },
+      onCompleted: () => {
+        isSpeaking.value = false;
+        isPlaying.value = false;
+        azureSynthesizer = null;
+        toast.success("Done reading");
+      },
+      onError: (error) => {
+        isSpeaking.value = false;
+        isPlaying.value = false;
+        azureSynthesizer = null;
         toast.error(error);
-      });
+      },
+    });
+
+    if (!azureSynthesizer) {
       isSpeaking.value = false;
-      toast.success("Done reading");
-    } catch (error: any) {
-      console.error("Speech synthesis error:", error);
-      isSpeaking.value = false;
-      toast.error("Speech synthesis failed: " + error.message);
+      isPlaying.value = false;
     }
   }
 };
@@ -907,16 +932,24 @@ const handleExport = async (format: ExportFormat) => {
                   @click="readResult"
                   :class="[
                     'flex items-center gap-1 text-xs font-medium transition-colors cursor-pointer',
-                    isSpeaking
+                    isPlaying
+                      ? 'text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300'
+                      : isSpeaking
                       ? 'text-cyan-600 dark:text-cyan-400'
                       : 'text-gray-500 hover:text-cyan-600',
                   ]"
-                  :title="isSpeaking ? 'Generating audio...' : 'Read aloud'"
-                  :disabled="isSpeaking"
+                  :title="
+                    isPlaying
+                      ? 'Stop audio'
+                      : isSpeaking
+                      ? 'Generating audio...'
+                      : 'Read aloud'
+                  "
+                  :disabled="isSpeaking && !isPlaying"
                 >
-                  <!-- Loading spinner when speaking -->
+                  <!-- Loading spinner when generating (not yet playing) -->
                   <svg
-                    v-if="isSpeaking"
+                    v-if="isSpeaking && !isPlaying"
                     class="animate-spin w-4 h-4"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -936,6 +969,15 @@ const handleExport = async (format: ExportFormat) => {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
+                  <!-- Stop icon when playing -->
+                  <svg
+                    v-else-if="isPlaying"
+                    class="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <rect x="6" y="6" width="12" height="12" rx="1"></rect>
+                  </svg>
                   <!-- Volume icon when idle -->
                   <svg
                     v-else
@@ -951,7 +993,9 @@ const handleExport = async (format: ExportFormat) => {
                       d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
                     ></path>
                   </svg>
-                  {{ isSpeaking ? "Generating..." : "Listen" }}
+                  {{
+                    isPlaying ? "Stop" : isSpeaking ? "Generating..." : "Listen"
+                  }}
                 </button>
 
                 <!-- Copy button -->
