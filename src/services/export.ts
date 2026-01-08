@@ -11,6 +11,43 @@ interface ExportOptions {
 }
 
 /**
+ * Check if text contains Arabic characters
+ */
+const containsArabic = (text: string): boolean => {
+  const arabicPattern =
+    /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+  return arabicPattern.test(text);
+};
+
+/**
+ * Load Amiri Arabic font for PDF generation
+ * Using Google Fonts CDN to fetch the font
+ */
+const loadArabicFont = async (): Promise<string | null> => {
+  try {
+    // Fetch Amiri Regular font from Google Fonts
+    const fontUrl =
+      "https://fonts.gstatic.com/s/amiri/v27/J7aRnpd8CGxBHqUpvrIw74NL.ttf";
+    const response = await fetch(fontUrl);
+    if (!response.ok) {
+      console.warn("Failed to load Arabic font");
+      return null;
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    const base64 = btoa(
+      new Uint8Array(arrayBuffer).reduce(
+        (data, byte) => data + String.fromCharCode(byte),
+        ""
+      )
+    );
+    return base64;
+  } catch (error) {
+    console.warn("Error loading Arabic font:", error);
+    return null;
+  }
+};
+
+/**
  * Export result to TXT file
  */
 export const exportToTxt = (options: ExportOptions): void => {
@@ -37,7 +74,7 @@ export const exportToTxt = (options: ExportOptions): void => {
 /**
  * Export result to PDF file
  */
-export const exportToPdf = (options: ExportOptions): void => {
+export const exportToPdf = async (options: ExportOptions): Promise<void> => {
   const { inputText, resultText, mode, targetLanguage } = options;
 
   const doc = new jsPDF();
@@ -46,9 +83,23 @@ export const exportToPdf = (options: ExportOptions): void => {
   const maxWidth = pageWidth - margin * 2;
   let yPosition = 20;
 
+  // Check if text contains Arabic
+  const hasArabic = containsArabic(inputText) || containsArabic(resultText);
+  let fontName = "helvetica";
+
+  // Load and register Arabic font if needed
+  if (hasArabic) {
+    const arabicFontBase64 = await loadArabicFont();
+    if (arabicFontBase64) {
+      doc.addFileToVFS("Amiri-Regular.ttf", arabicFontBase64);
+      doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
+      fontName = "Amiri";
+    }
+  }
+
   // Title
   doc.setFontSize(18);
-  doc.setFont("helvetica", "bold");
+  doc.setFont(fontName, "bold");
   doc.text(
     `3ssila AI - ${mode === "translate" ? "Translation" : "Summary"}`,
     margin,
@@ -58,7 +109,7 @@ export const exportToPdf = (options: ExportOptions): void => {
 
   // Date and language
   doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
+  doc.setFont(fontName, "normal");
   doc.setTextColor(100);
   doc.text(`Date: ${new Date().toLocaleString()}`, margin, yPosition);
   yPosition += 5;
@@ -71,20 +122,28 @@ export const exportToPdf = (options: ExportOptions): void => {
   // Original text section
   doc.setTextColor(0);
   doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
+  doc.setFont(fontName, "bold");
   doc.text("Original Text:", margin, yPosition);
   yPosition += 7;
 
-  doc.setFont("helvetica", "normal");
+  doc.setFont(fontName, "normal");
   doc.setFontSize(11);
   const inputLines = doc.splitTextToSize(inputText, maxWidth);
+
+  // Determine text alignment based on content
+  const inputIsArabic = containsArabic(inputText);
 
   for (const line of inputLines) {
     if (yPosition > doc.internal.pageSize.getHeight() - 20) {
       doc.addPage();
       yPosition = 20;
     }
-    doc.text(line, margin, yPosition);
+    if (inputIsArabic) {
+      // Right-align Arabic text
+      doc.text(line, pageWidth - margin, yPosition, { align: "right" });
+    } else {
+      doc.text(line, margin, yPosition);
+    }
     yPosition += 6;
   }
 
@@ -92,7 +151,7 @@ export const exportToPdf = (options: ExportOptions): void => {
 
   // Result section
   doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
+  doc.setFont(fontName, "bold");
   if (yPosition > doc.internal.pageSize.getHeight() - 30) {
     doc.addPage();
     yPosition = 20;
@@ -104,16 +163,24 @@ export const exportToPdf = (options: ExportOptions): void => {
   );
   yPosition += 7;
 
-  doc.setFont("helvetica", "normal");
+  doc.setFont(fontName, "normal");
   doc.setFontSize(11);
   const resultLines = doc.splitTextToSize(resultText, maxWidth);
+
+  // Determine text alignment based on content
+  const resultIsArabic = containsArabic(resultText);
 
   for (const line of resultLines) {
     if (yPosition > doc.internal.pageSize.getHeight() - 20) {
       doc.addPage();
       yPosition = 20;
     }
-    doc.text(line, margin, yPosition);
+    if (resultIsArabic) {
+      // Right-align Arabic text
+      doc.text(line, pageWidth - margin, yPosition, { align: "right" });
+    } else {
+      doc.text(line, margin, yPosition);
+    }
     yPosition += 6;
   }
 
@@ -276,7 +343,7 @@ export const exportResult = async (
       exportToTxt(options);
       break;
     case "pdf":
-      exportToPdf(options);
+      await exportToPdf(options);
       break;
     case "docx":
       await exportToDocx(options);
