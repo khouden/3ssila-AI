@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted, computed } from "vue";
+import { ref, watch, onMounted, onUnmounted } from "vue";
 
 const props = withDefaults(
   defineProps<{
@@ -50,18 +50,6 @@ onUnmounted(() => {
   window.removeEventListener("resize", checkMobile);
 });
 
-const currentSnapPoint = computed(() => {
-  return props.snapPoints[currentSnapIndex.value] || props.snapPoints[0];
-});
-
-const translateY = computed(() => {
-  if (!props.modelValue) return "100%";
-  if (isDragging.value && currentY.value > 0) {
-    return `${currentY.value}px`;
-  }
-  return `${(1 - currentSnapPoint.value) * 100}%`;
-});
-
 const close = () => {
   emit("update:modelValue", false);
   emit("close");
@@ -76,8 +64,10 @@ const handleBackdropClick = () => {
 // Touch handling for swipe-to-dismiss
 const handleTouchStart = (e: TouchEvent) => {
   if (!props.closeOnSwipeDown) return;
+  const touch = e.touches[0];
+  if (!touch) return;
   isDragging.value = true;
-  startY.value = e.touches[0].clientY;
+  startY.value = touch.clientY;
   currentY.value = 0;
   if (sheetRef.value) {
     sheetHeight.value = sheetRef.value.offsetHeight;
@@ -86,7 +76,9 @@ const handleTouchStart = (e: TouchEvent) => {
 
 const handleTouchMove = (e: TouchEvent) => {
   if (!isDragging.value) return;
-  const deltaY = e.touches[0].clientY - startY.value;
+  const touch = e.touches[0];
+  if (!touch) return;
+  const deltaY = touch.clientY - startY.value;
   // Only allow dragging down (positive delta)
   if (deltaY > 0) {
     currentY.value = deltaY;

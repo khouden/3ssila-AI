@@ -24,14 +24,18 @@ const dragY = ref(0);
 const startY = ref(0);
 
 const handleTouchStart = (e: TouchEvent) => {
+  const touch = e.touches[0];
+  if (!touch) return;
   isDragging.value = true;
-  startY.value = e.touches[0].clientY;
+  startY.value = touch.clientY;
   dragY.value = 0;
 };
 
 const handleTouchMove = (e: TouchEvent) => {
   if (!isDragging.value) return;
-  const deltaY = e.touches[0].clientY - startY.value;
+  const touch = e.touches[0];
+  if (!touch) return;
+  const deltaY = touch.clientY - startY.value;
   if (deltaY > 0) {
     dragY.value = deltaY;
   }

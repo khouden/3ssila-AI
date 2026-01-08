@@ -766,9 +766,9 @@ onMounted(() => {
           >
             {{
               t.history.pageOf
-                .replace("{current}", currentPage)
-                .replace("{total}", totalPages)
-                .replace("{items}", totalItems)
+                .replace("{current}", String(currentPage))
+                .replace("{total}", String(totalPages))
+                .replace("{items}", String(totalItems))
             }}
           </div>
         </div>

@@ -103,6 +103,15 @@ const clearInputStorage = () => {
   }
 };
 
+const clearResultText = () => {
+  resultText.value = "";
+  try {
+    localStorage.removeItem(STORAGE_KEYS.resultText);
+  } catch (e) {
+    console.warn("Failed to clear result from localStorage:", e);
+  }
+};
+
 // Voice capabilities
 const isListening = ref(false);
 const isSpeaking = ref(false);
@@ -134,12 +143,16 @@ const swipeIndicatorOpacity = ref(0);
 const swipeDirection = ref<"left" | "right" | null>(null);
 
 const handleModeTouchStart = (e: TouchEvent) => {
-  modeTouchStartX.value = e.touches[0].clientX;
-  modeTouchEndX.value = e.touches[0].clientX;
+  const touch = e.touches[0];
+  if (!touch) return;
+  modeTouchStartX.value = touch.clientX;
+  modeTouchEndX.value = touch.clientX;
 };
 
 const handleModeTouchMove = (e: TouchEvent) => {
-  modeTouchEndX.value = e.touches[0].clientX;
+  const touch = e.touches[0];
+  if (!touch) return;
+  modeTouchEndX.value = touch.clientX;
   const diff = modeTouchEndX.value - modeTouchStartX.value;
   swipeIndicatorOpacity.value = Math.min(Math.abs(diff) / 100, 0.5);
   swipeDirection.value = diff > 0 ? "right" : "left";
@@ -1365,10 +1378,7 @@ const handleExport = async (format: ExportFormat) => {
                 <!-- Clear button -->
                 <button
                   v-if="resultText"
-                  @click="
-                    resultText = '';
-                    localStorage.removeItem(STORAGE_KEYS.resultText);
-                  "
+                  @click="clearResultText"
                   class="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-red-500 transition-colors cursor-pointer"
                   title="Clear result"
                 >

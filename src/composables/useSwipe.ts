@@ -30,10 +30,12 @@ export function useSwipe(
   const deltaY = ref(0);
 
   const handleTouchStart = (e: TouchEvent) => {
-    touchStartX.value = e.touches[0].clientX;
-    touchStartY.value = e.touches[0].clientY;
-    touchEndX.value = e.touches[0].clientX;
-    touchEndY.value = e.touches[0].clientY;
+    const touch = e.touches[0];
+    if (!touch) return;
+    touchStartX.value = touch.clientX;
+    touchStartY.value = touch.clientY;
+    touchEndX.value = touch.clientX;
+    touchEndY.value = touch.clientY;
     isSwiping.value = true;
     deltaX.value = 0;
     deltaY.value = 0;
@@ -41,9 +43,10 @@ export function useSwipe(
 
   const handleTouchMove = (e: TouchEvent) => {
     if (!isSwiping.value) return;
-
-    touchEndX.value = e.touches[0].clientX;
-    touchEndY.value = e.touches[0].clientY;
+    const touch = e.touches[0];
+    if (!touch) return;
+    touchEndX.value = touch.clientX;
+    touchEndY.value = touch.clientY;
     deltaX.value = touchEndX.value - touchStartX.value;
     deltaY.value = touchEndY.value - touchStartY.value;
   };

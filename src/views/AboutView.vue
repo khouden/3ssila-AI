@@ -150,7 +150,7 @@ const stats = computed(() => [
               {{ stat.value }}
             </div>
             <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">
-              {{ t.about[stat.labelKey] }}
+              {{ t.about[stat.labelKey as keyof typeof t.about] }}
             </div>
           </div>
         </div>
@@ -255,10 +255,10 @@ const stats = computed(() => [
             </div>
 
             <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              {{ t.about[value.titleKey] }}
+              {{ t.about[value.titleKey as keyof typeof t.about] }}
             </h3>
             <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-              {{ t.about[value.descKey] }}
+              {{ t.about[value.descKey as keyof typeof t.about] }}
             </p>
           </div>
         </div>
@@ -295,7 +295,7 @@ const stats = computed(() => [
               {{ member.name }}
             </h3>
             <p class="text-cyan-600 dark:text-cyan-400 font-medium mb-4">
-              {{ t.about[member.roleKey] }}
+              {{ t.about[member.roleKey as keyof typeof t.about] }}
             </p>
             <!-- Social Links -->
             <div class="flex items-center justify-center gap-3">
