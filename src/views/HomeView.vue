@@ -14,6 +14,7 @@ import {
 import { exportResult, type ExportFormat } from "../services/export";
 import type { SpeechRecognizer } from "microsoft-cognitiveservices-speech-sdk";
 import SkeletonLoader from "../components/SkeletonLoader.vue";
+import BottomSheet from "../components/BottomSheet.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -121,6 +122,48 @@ const speechLangDropdownRef = ref<HTMLElement | null>(null);
 const isExportDropdownOpen = ref(false);
 const isExporting = ref(false);
 const exportDropdownRef = ref<HTMLElement | null>(null);
+
+// Swipe to change mode on mobile
+const modeContainerRef = ref<HTMLElement | null>(null);
+const modeTouchStartX = ref(0);
+const modeTouchEndX = ref(0);
+const isModeAnimating = ref(false);
+const swipeIndicatorOpacity = ref(0);
+const swipeDirection = ref<"left" | "right" | null>(null);
+
+const handleModeTouchStart = (e: TouchEvent) => {
+  modeTouchStartX.value = e.touches[0].clientX;
+  modeTouchEndX.value = e.touches[0].clientX;
+};
+
+const handleModeTouchMove = (e: TouchEvent) => {
+  modeTouchEndX.value = e.touches[0].clientX;
+  const diff = modeTouchEndX.value - modeTouchStartX.value;
+  swipeIndicatorOpacity.value = Math.min(Math.abs(diff) / 100, 0.5);
+  swipeDirection.value = diff > 0 ? "right" : "left";
+};
+
+const handleModeTouchEnd = () => {
+  const diff = modeTouchEndX.value - modeTouchStartX.value;
+  const threshold = 50;
+
+  if (Math.abs(diff) > threshold) {
+    isModeAnimating.value = true;
+    if (diff > 0 && mode.value === "summarize") {
+      // Swipe right: go to translate
+      mode.value = "translate";
+    } else if (diff < 0 && mode.value === "translate") {
+      // Swipe left: go to summarize
+      mode.value = "summarize";
+    }
+    setTimeout(() => {
+      isModeAnimating.value = false;
+    }, 300);
+  }
+
+  swipeIndicatorOpacity.value = 0;
+  swipeDirection.value = null;
+};
 
 // Click outside handler
 const handleClickOutside = (event: MouseEvent) => {
@@ -646,9 +689,50 @@ const handleExport = async (format: ExportFormat) => {
         <div
           class="flex flex-col sm:flex-row items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-[#252525] px-4 py-3 gap-4 rounded-t-3xl overflow-visible relative z-20"
         >
+          <!-- Mode toggle with swipe support on mobile -->
           <div
-            class="flex space-x-1 bg-gray-200 dark:bg-gray-800 p-1 rounded-full"
+            ref="modeContainerRef"
+            class="relative flex space-x-1 bg-gray-200 dark:bg-gray-800 p-1 rounded-full select-none"
+            :class="{ 'transition-transform duration-300': isModeAnimating }"
+            @touchstart="handleModeTouchStart"
+            @touchmove="handleModeTouchMove"
+            @touchend="handleModeTouchEnd"
           >
+            <!-- Swipe indicator (mobile) -->
+            <div
+              class="absolute inset-0 rounded-full pointer-events-none sm:hidden flex items-center justify-between px-2 overflow-hidden"
+              :style="{ opacity: swipeIndicatorOpacity }"
+            >
+              <svg
+                v-if="swipeDirection === 'right' && mode === 'summarize'"
+                class="w-4 h-4 text-cyan-500 animate-pulse"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              <div class="flex-1"></div>
+              <svg
+                v-if="swipeDirection === 'left' && mode === 'translate'"
+                class="w-4 h-4 text-cyan-500 animate-pulse"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </div>
             <button
               @click="mode = 'translate'"
               :class="
@@ -671,6 +755,12 @@ const handleExport = async (format: ExportFormat) => {
             >
               Summarize
             </button>
+            <!-- Mobile swipe hint -->
+            <div
+              class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] text-gray-400 whitespace-nowrap sm:hidden my-2"
+            >
+              Swipe to switch
+            </div>
           </div>
 
           <div v-if="mode === 'translate'" class="flex items-center gap-2">
@@ -1291,44 +1381,14 @@ const handleExport = async (format: ExportFormat) => {
     </div>
   </div>
 
-  <!-- Voice recording modal -->
-  <div
-    v-if="showMicModal"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
+  <!-- Voice recording bottom sheet / modal -->
+  <BottomSheet
+    v-model="showMicModal"
+    title="Voice input"
+    subtitle="Choose the language you will speak and start recording."
+    @close="closeMicModal"
   >
-    <div
-      class="bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200 dark:border-gray-700 p-6 space-y-5"
-    >
-      <div class="flex items-start justify-between gap-3">
-        <div>
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-            Voice input
-          </h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-            Choose the language you will speak and start recording.
-          </p>
-        </div>
-        <button
-          @click="closeMicModal"
-          class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 cursor-pointer"
-          aria-label="Close"
-        >
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      </div>
-
+    <div class="p-4 md:p-6 space-y-5">
       <div class="space-y-2">
         <label class="text-sm font-medium text-gray-700 dark:text-gray-200"
           >Speech language</label
@@ -1445,7 +1505,9 @@ const handleExport = async (format: ExportFormat) => {
           <span v-for="bar in 12" :key="bar" class="wave-bar"></span>
         </div>
       </div>
+    </div>
 
+    <template #footer>
       <div class="flex items-center justify-end gap-3">
         <button
           class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
@@ -1468,8 +1530,8 @@ const handleExport = async (format: ExportFormat) => {
           Stop & use text
         </button>
       </div>
-    </div>
-  </div>
+    </template>
+  </BottomSheet>
 </template>
 
 <style scoped>
