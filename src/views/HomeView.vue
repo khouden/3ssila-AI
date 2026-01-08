@@ -934,7 +934,7 @@ const handleExport = async (format: ExportFormat) => {
               v-if="isSpeechRecognitionSupported"
               @click="openMicModal"
               :class="[
-                'absolute top-4 right-16 p-2 rounded-full transition-colors cursor-pointer',
+                'absolute top-4 left-16 p-2 rounded-full transition-colors cursor-pointer',
                 isListening
                   ? 'bg-red-500 text-white animate-pulse hover:bg-red-600'
                   : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400',
@@ -961,7 +961,7 @@ const handleExport = async (format: ExportFormat) => {
             <button
               @click="triggerFileUpload"
               :disabled="isExtracting"
-              class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors cursor-pointer disabled:cursor-not-allowed"
+              class="absolute top-4 left-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors cursor-pointer disabled:cursor-not-allowed"
               :title="t.home.uploadFileHint"
             >
               <!-- Spinning loader when extracting -->
@@ -1007,7 +1007,7 @@ const handleExport = async (format: ExportFormat) => {
             <textarea
               v-model="inputText"
               :placeholder="t.home.inputPlaceholder"
-              class="w-full flex-1 resize-none outline-none text-gray-700 dark:text-gray-300 text-lg bg-transparent placeholder-gray-400 leading-relaxed pt-10"
+              class="w-full flex-1 resize-none outline-none text-gray-700 dark:text-gray-300 text-lg bg-transparent placeholder-gray-400 leading-relaxed pt-10 pr-14 custom-scrollbar"
             ></textarea>
 
             <div class="mt-4 flex items-center justify-between relative z-10">
@@ -1643,15 +1643,34 @@ const handleExport = async (format: ExportFormat) => {
 }
 
 /* Custom scrollbar for the text areas */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(14, 165, 233, 0.7) transparent;
 }
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.5);
-  border-radius: 20px;
+  background: linear-gradient(
+    180deg,
+    rgba(34, 211, 238, 0.9),
+    rgba(14, 165, 233, 0.8)
+  );
+  border-radius: 999px;
+}
+
+:global(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(45, 212, 191, 0.9),
+    rgba(6, 182, 212, 0.85)
+  );
 }
 
 /* Cairo font for Arabic text */
