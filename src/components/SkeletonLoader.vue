@@ -4,7 +4,7 @@
     <template v-if="type === 'text'">
       <div class="space-y-3">
         <div
-          v-for="(line, index) in lines"
+          v-for="(_, index) in lines"
           :key="index"
           class="skeleton-line"
           :style="{ width: getLineWidth(index) }"
@@ -81,9 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-
-const props = withDefaults(
+withDefaults(
   defineProps<{
     type?: "text" | "card" | "result" | "inline" | "box";
     lines?: number;
@@ -103,7 +101,7 @@ const props = withDefaults(
 // Generate varying line widths for more natural look
 const getLineWidth = (index: number): string => {
   const widths = ["100%", "95%", "85%", "90%", "70%", "80%", "75%", "88%"];
-  return widths[index % widths.length];
+  return widths[index % widths.length] as string;
 };
 </script>
 
