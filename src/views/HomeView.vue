@@ -64,6 +64,7 @@ const CHARACTER_LIMIT = 250;
 // Voice capabilities
 const isListening = ref(false);
 const isSpeaking = ref(false);
+const isProcessingSpeech = ref(false);
 let azureRecognizer: SpeechRecognizer | null = null;
 const baseSpeechText = ref("");
 const interimTranscript = ref("");
@@ -130,6 +131,12 @@ const selectedLanguage = computed(() => {
   return (
     languages.find((lang) => lang.name === targetLanguage.value) || languages[0]
   );
+});
+
+// RTL languages detection
+const rtlLanguages = ["Arabic", "Urdu", "Hebrew", "Persian", "Farsi"];
+const isRtlLanguage = computed(() => {
+  return rtlLanguages.includes(targetLanguage.value);
 });
 
 // --- Lifecycle ---
@@ -280,6 +287,7 @@ const closeMicModal = () => {
   }
   azureRecognizer = null;
   isListening.value = false;
+  isProcessingSpeech.value = false;
   interimTranscript.value = "";
   baseSpeechText.value = inputText.value.trim();
   showMicModal.value = false;
@@ -290,10 +298,15 @@ const startMicRecording = async () => {
   await toggleMicrophone(speechLanguageSelection.value);
 };
 
-const stopMicRecording = () => {
+const stopMicRecording = async () => {
   if (!isListening.value) return;
-  toggleMicrophone(speechLanguageSelection.value);
+  isProcessingSpeech.value = true;
   showMicModal.value = false;
+  await toggleMicrophone(speechLanguageSelection.value);
+  // Small delay to show processing state before it completes
+  setTimeout(() => {
+    isProcessingSpeech.value = false;
+  }, 500);
 };
 
 // Voice handler: Toggle microphone for speech recognition
@@ -536,7 +549,7 @@ const readResult = async () => {
 
         <div class="flex-1 flex flex-col md:flex-row min-h-0">
           <div
-            class="flex-1 p-6 flex flex-col relative border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] transition-colors"
+            class="flex-1 p-6 flex flex-col relative border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] transition-colors md:rounded-bl-3xl"
             :class="{
               'bg-cyan-50 dark:bg-cyan-900/20 border-cyan-400 border-2 border-dashed':
                 isDragging,
@@ -566,6 +579,38 @@ const readResult = async () => {
                 </svg>
                 <p class="text-cyan-600 dark:text-cyan-400 font-medium">
                   Drop your file here
+                </p>
+              </div>
+            </div>
+
+            <!-- Speech processing overlay -->
+            <div
+              v-if="isProcessingSpeech"
+              class="absolute inset-0 flex items-center justify-center bg-white/90 dark:bg-[#1a1a1a]/90 z-20"
+            >
+              <div class="text-center">
+                <svg
+                  class="animate-spin w-10 h-10 mx-auto text-cyan-500 mb-3"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                <p class="text-cyan-600 dark:text-cyan-400 font-medium">
+                  Processing speech...
                 </p>
               </div>
             </div>
@@ -657,7 +702,7 @@ const readResult = async () => {
             <textarea
               v-model="inputText"
               placeholder="Insert your text here..."
-              class="w-full flex-1 resize-none outline-none text-gray-700 dark:text-gray-300 text-lg bg-transparent placeholder-gray-400 leading-relaxed"
+              class="w-full flex-1 resize-none outline-none text-gray-700 dark:text-gray-300 text-lg bg-transparent placeholder-gray-400 leading-relaxed pt-10"
             ></textarea>
 
             <div class="mt-4 flex items-center justify-between relative z-10">
@@ -673,6 +718,28 @@ const readResult = async () => {
                 >
                   / {{ CHARACTER_LIMIT }} limit
                 </span>
+                <!-- Clear input button -->
+                <button
+                  v-if="inputText"
+                  @click="inputText = ''"
+                  class="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-red-500 transition-colors cursor-pointer ml-2"
+                  title="Clear input"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    ></path>
+                  </svg>
+                  Clear
+                </button>
               </div>
               <button
                 @click="handleSubmit"
@@ -710,7 +777,7 @@ const readResult = async () => {
           </div>
 
           <div
-            class="flex-1 p-6 bg-gray-50 dark:bg-[#202020] flex flex-col relative"
+            class="flex-1 p-6 bg-gray-50 dark:bg-[#202020] flex flex-col relative rounded-b-3xl md:rounded-bl-none md:rounded-br-3xl"
           >
             <div
               class="absolute top-4 left-6 text-xs font-bold text-gray-400 uppercase tracking-wider"
@@ -728,6 +795,11 @@ const readResult = async () => {
             <div
               v-else
               class="flex-1 mt-6 overflow-y-auto prose prose-lg max-w-none text-gray-800 dark:text-gray-200 leading-relaxed custom-scrollbar"
+              :dir="isRtlLanguage ? 'rtl' : 'ltr'"
+              :class="{
+                'text-right': isRtlLanguage,
+                'font-cairo': targetLanguage === 'Arabic',
+              }"
             >
               {{ resultText }}
             </div>
@@ -750,27 +822,29 @@ const readResult = async () => {
                       ? 'text-cyan-600 dark:text-cyan-400'
                       : 'text-gray-500 hover:text-cyan-600',
                   ]"
-                  :title="isSpeaking ? 'Stop reading' : 'Read aloud'"
+                  :title="isSpeaking ? 'Generating audio...' : 'Read aloud'"
+                  :disabled="isSpeaking"
                 >
-                  <!-- Stop icon when speaking -->
+                  <!-- Loading spinner when speaking -->
                   <svg
                     v-if="isSpeaking"
-                    class="w-4 h-4"
+                    class="animate-spin w-4 h-4"
+                    xmlns="http://www.w3.org/2000/svg"
                     fill="none"
-                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></circle>
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    ></path>
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 10h6v4H9z"
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
                   <!-- Volume icon when idle -->
@@ -788,7 +862,7 @@ const readResult = async () => {
                       d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
                     ></path>
                   </svg>
-                  {{ isSpeaking ? "Stop" : "Listen" }}
+                  {{ isSpeaking ? "Generating..." : "Listen" }}
                 </button>
 
                 <!-- Copy button -->
@@ -811,6 +885,29 @@ const readResult = async () => {
                     ></path>
                   </svg>
                   Copy
+                </button>
+
+                <!-- Clear button -->
+                <button
+                  v-if="resultText"
+                  @click="resultText = ''"
+                  class="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-red-500 transition-colors cursor-pointer"
+                  title="Clear result"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    ></path>
+                  </svg>
+                  Clear
                 </button>
               </div>
             </div>
@@ -932,8 +1029,31 @@ const readResult = async () => {
         class="bg-gray-50 dark:bg-gray-900/40 rounded-xl border border-gray-200 dark:border-gray-700 p-4"
       >
         <div class="flex items-center justify-between mb-3">
-          <div class="text-sm font-medium text-gray-700 dark:text-gray-200">
-            {{ isListening ? "Listening..." : "Ready to record" }}
+          <div
+            class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200"
+          >
+            <svg
+              v-if="isListening"
+              class="animate-spin w-4 h-4 text-red-500"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            {{ isListening ? "Processing audio..." : "Ready to record" }}
           </div>
           <span
             class="text-xs px-2 py-1 rounded-full"
@@ -954,7 +1074,7 @@ const readResult = async () => {
 
       <div class="flex items-center justify-end gap-3">
         <button
-          class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800  cursor-pointer"
+          class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
           @click="closeMicModal"
         >
           Cancel
@@ -1072,5 +1192,10 @@ const readResult = async () => {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: rgba(156, 163, 175, 0.5);
   border-radius: 20px;
+}
+
+/* Cairo font for Arabic text */
+.font-cairo {
+  font-family: "Cairo", sans-serif;
 }
 </style>
