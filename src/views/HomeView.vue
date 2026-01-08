@@ -4,6 +4,7 @@ import { useRouter, useRoute } from "vue-router";
 import api from "../services/api";
 import { auth } from "../stores/auth";
 import { toast } from "../stores/toast";
+import { favorites } from "../stores/favorites";
 import {
   speechToText,
   stopSpeechToText,
@@ -146,6 +147,26 @@ onMounted(() => {
     mode.value = queryMode;
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+
+  // Pre-fill input and result text from query parameters (used by Favorites)
+  const prefillText = route.query.prefill as string;
+  const prefillResult = route.query.result as string;
+  const prefillTargetLang = route.query.targetLang as string;
+
+  if (prefillText) {
+    inputText.value = prefillText;
+  }
+  if (prefillResult) {
+    resultText.value = prefillResult;
+  }
+  if (prefillTargetLang) {
+    targetLanguage.value = prefillTargetLang;
+  }
+
+  // Clear the prefill query params from URL to avoid confusion on refresh
+  if (prefillText || prefillResult) {
+    router.replace({ path: "/", query: { mode: queryMode || undefined } });
+  }
 });
 
 // --- Computed ---
@@ -198,6 +219,31 @@ const handleSubmit = async () => {
     toast.error(detail);
   } finally {
     isLoading.value = false;
+  }
+};
+
+// Check if current result is favorited
+const isCurrentFavorited = computed(() => {
+  return favorites.isFavorited(inputText.value, resultText.value);
+});
+
+// Toggle favorite for current result
+const toggleFavorite = () => {
+  if (!inputText.value || !resultText.value) return;
+
+  const isFav = favorites.toggle({
+    type: mode.value === "translate" ? "translation" : "summary",
+    inputText: inputText.value,
+    resultText: resultText.value,
+    targetLanguage:
+      mode.value === "translate" ? targetLanguage.value : undefined,
+    createdAt: new Date().toISOString(),
+  });
+
+  if (isFav) {
+    toast.success("Added to favorites!");
+  } else {
+    toast.success("Removed from favorites");
   }
 };
 
@@ -885,6 +931,38 @@ const readResult = async () => {
                     ></path>
                   </svg>
                   Copy
+                </button>
+
+                <!-- Save to Favorites button -->
+                <button
+                  v-if="resultText"
+                  @click="toggleFavorite"
+                  :class="[
+                    'flex items-center gap-1 text-xs font-medium transition-colors cursor-pointer',
+                    isCurrentFavorited
+                      ? 'text-yellow-500 hover:text-yellow-600'
+                      : 'text-gray-500 hover:text-yellow-500',
+                  ]"
+                  :title="
+                    isCurrentFavorited
+                      ? 'Remove from favorites'
+                      : 'Save to favorites'
+                  "
+                >
+                  <svg
+                    class="w-4 h-4"
+                    :fill="isCurrentFavorited ? 'currentColor' : 'none'"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                    ></path>
+                  </svg>
+                  {{ isCurrentFavorited ? "Saved" : "Save" }}
                 </button>
 
                 <!-- Clear button -->

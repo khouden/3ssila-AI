@@ -7,6 +7,7 @@ import HomeView from "../views/HomeView.vue";
 import LoginView from "../views/LoginView.vue";
 import SignupView from "../views/SignupView.vue";
 import HistoryView from "../views/HistoryView.vue";
+import FavoritesView from "../views/FavoritesView.vue";
 import AboutView from "../views/AboutView.vue";
 import PrivacyPolicyView from "../views/PrivacyPolicyView.vue";
 import TermsOfServiceView from "../views/TermsOfServiceView.vue";
@@ -47,6 +48,11 @@ const routes: RouteRecordRaw[] = [
     path: "/history",
     name: "history",
     component: HistoryView as any,
+  },
+  {
+    path: "/favorites",
+    name: "favorites",
+    component: FavoritesView as any,
   },
 ];
 

@@ -5,6 +5,7 @@ import api from "../services/api";
 import { auth } from "../stores/auth";
 import { toast } from "../stores/toast";
 import { confirm } from "../stores/confirm";
+import { favorites } from "../stores/favorites";
 
 const router = useRouter();
 
@@ -202,6 +203,40 @@ const deleteSelected = async () => {
 const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text);
   toast.success("Copied to clipboard!");
+};
+
+// Check if a history item is favorited
+const isItemFavorited = (item: any): boolean => {
+  const inputText = item.input_text || item.original_text || "";
+  const resultText =
+    item.result || item.output_text || item.translated_text || "";
+  return favorites.isFavorited(inputText, resultText);
+};
+
+// Toggle favorite for a history item
+const toggleItemFavorite = (item: any) => {
+  const inputText = item.input_text || item.original_text || "";
+  const resultText =
+    item.result || item.output_text || item.translated_text || "";
+  const isSummary = item.action_type === "summarize";
+
+  if (!inputText || !resultText) return;
+
+  const isFav = favorites.toggle({
+    type: isSummary ? "summary" : "translation",
+    inputText,
+    resultText,
+    targetLanguage: !isSummary
+      ? item.target_language || item.target_lang
+      : undefined,
+    createdAt: item.created_at || item.timestamp || new Date().toISOString(),
+  });
+
+  if (isFav) {
+    toast.success("Added to favorites!");
+  } else {
+    toast.success("Removed from favorites");
+  }
 };
 
 const goToNextPage = () => {
@@ -481,19 +516,52 @@ onMounted(() => {
                 </div>
 
                 <!-- Copy Button -->
-                <button
-                  @click="
-                    copyToClipboard(
-                      item.result ||
-                        item.output_text ||
-                        item.translated_text ||
-                        ''
-                    )
-                  "
-                  class="text-xs font-medium text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors"
-                >
-                  Copy Result
-                </button>
+                <div class="flex items-center gap-4">
+                  <button
+                    @click="
+                      copyToClipboard(
+                        item.result ||
+                          item.output_text ||
+                          item.translated_text ||
+                          ''
+                      )
+                    "
+                    class="text-xs font-medium text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors cursor-pointer"
+                  >
+                    Copy Result
+                  </button>
+
+                  <!-- Save to Favorites Button -->
+                  <button
+                    @click="toggleItemFavorite(item)"
+                    :class="[
+                      'flex items-center gap-1 text-xs font-medium transition-colors cursor-pointer',
+                      isItemFavorited(item)
+                        ? 'text-yellow-500 hover:text-yellow-600'
+                        : 'text-gray-500 hover:text-yellow-500',
+                    ]"
+                    :title="
+                      isItemFavorited(item)
+                        ? 'Remove from favorites'
+                        : 'Save to favorites'
+                    "
+                  >
+                    <svg
+                      class="w-4 h-4"
+                      :fill="isItemFavorited(item) ? 'currentColor' : 'none'"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                      ></path>
+                    </svg>
+                    {{ isItemFavorited(item) ? "Saved" : "Save" }}
+                  </button>
+                </div>
               </div>
 
               <!-- Delete Button -->
