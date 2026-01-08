@@ -2,7 +2,10 @@
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { RouterLink, useRouter, useRoute } from "vue-router";
 import { auth } from "../stores/auth";
+import { useI18n } from "../composables/useI18n";
+import LanguageSwitcher from "./LanguageSwitcher.vue";
 
+const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 
@@ -126,7 +129,7 @@ onBeforeUnmount(() => {
                 route.path === '/' && !route.query.mode,
             }"
           >
-            Home
+            {{ t.nav.home }}
           </RouterLink>
 
           <!-- History (for authenticated users) -->
@@ -136,7 +139,7 @@ onBeforeUnmount(() => {
             class="relative px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 rounded-lg transition-all duration-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
             active-class="!text-cyan-500 dark:!text-cyan-400"
           >
-            History
+            {{ t.nav.history }}
           </RouterLink>
 
           <!-- Favorites -->
@@ -150,7 +153,7 @@ onBeforeUnmount(() => {
                 d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
               />
             </svg>
-            Favorites
+            {{ t.nav.favorites }}
           </RouterLink>
 
           <!-- About -->
@@ -159,19 +162,20 @@ onBeforeUnmount(() => {
             class="relative px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 rounded-lg transition-all duration-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
             active-class="!text-cyan-500 dark:!text-cyan-400"
           >
-            About
+            {{ t.nav.about }}
           </RouterLink>
         </nav>
 
         <!-- Desktop Actions -->
         <div class="hidden lg:flex items-center gap-3">
+          <!-- Language Switcher -->
+          <LanguageSwitcher />
+
           <!-- Theme Toggle -->
           <button
             @click="toggleTheme"
             class="p-2.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 cursor-pointer"
-            :aria-label="
-              isDark ? 'Switch to light mode' : 'Switch to dark mode'
-            "
+            :aria-label="isDark ? t.theme.switchToLight : t.theme.switchToDark"
           >
             <svg
               v-if="isDark"
@@ -283,7 +287,7 @@ onBeforeUnmount(() => {
                           d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                       </svg>
-                      History
+                      {{ t.nav.history }}
                     </RouterLink>
                     <RouterLink
                       to="/favorites"
@@ -299,7 +303,7 @@ onBeforeUnmount(() => {
                           d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
                         />
                       </svg>
-                      Favorites
+                      {{ t.nav.favorites }}
                     </RouterLink>
                   </div>
                   <div
@@ -322,7 +326,7 @@ onBeforeUnmount(() => {
                           d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                         />
                       </svg>
-                      Log out
+                      {{ t.nav.logout }}
                     </button>
                   </div>
                 </div>
@@ -335,14 +339,14 @@ onBeforeUnmount(() => {
               to="/login"
               class="px-4 py-2 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
             >
-              Log in
+              {{ t.nav.login }}
             </RouterLink>
 
             <RouterLink
               to="/signup"
               class="px-5 py-2.5 text-sm font-semibold rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 text-white shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:from-cyan-400 hover:to-cyan-300 transition-all duration-200"
             >
-              Get Started
+              {{ t.nav.getStarted }}
             </RouterLink>
           </template>
         </div>
@@ -431,6 +435,11 @@ onBeforeUnmount(() => {
         class="lg:hidden absolute top-full left-0 right-0 bg-white dark:bg-[#1a1a1a] border-b border-gray-200 dark:border-gray-800 shadow-xl"
       >
         <div class="max-w-7xl mx-auto px-4 py-4">
+          <!-- Language Switcher for Mobile -->
+          <div class="pb-4 mb-4 border-b border-gray-200 dark:border-gray-700">
+            <LanguageSwitcher />
+          </div>
+
           <!-- User Info (if authenticated) -->
           <div
             v-if="auth.isAuthenticated()"
@@ -475,7 +484,7 @@ onBeforeUnmount(() => {
                   d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
                 />
               </svg>
-              Home
+              {{ t.nav.home }}
             </RouterLink>
 
             <RouterLink
@@ -498,7 +507,7 @@ onBeforeUnmount(() => {
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              History
+              {{ t.nav.history }}
             </RouterLink>
 
             <RouterLink
@@ -512,7 +521,7 @@ onBeforeUnmount(() => {
                   d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
                 />
               </svg>
-              Favorites
+              {{ t.nav.favorites }}
             </RouterLink>
 
             <RouterLink
@@ -534,7 +543,7 @@ onBeforeUnmount(() => {
                   d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              About
+              {{ t.nav.about }}
             </RouterLink>
           </nav>
 
@@ -560,7 +569,7 @@ onBeforeUnmount(() => {
                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                   />
                 </svg>
-                Log out
+                {{ t.nav.logout }}
               </button>
             </template>
 
@@ -570,7 +579,7 @@ onBeforeUnmount(() => {
                 @click="closeMobileMenu"
                 class="block w-full px-4 py-3 text-sm font-medium rounded-xl border-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 transition-colors text-center"
               >
-                Log in
+                {{ t.nav.login }}
               </RouterLink>
 
               <RouterLink
@@ -578,7 +587,7 @@ onBeforeUnmount(() => {
                 @click="closeMobileMenu"
                 class="block w-full px-4 py-3 text-sm font-semibold rounded-xl bg-gradient-to-r from-cyan-500 to-cyan-400 text-white shadow-lg hover:from-cyan-400 hover:to-cyan-300 transition-all text-center"
               >
-                Get Started — It's Free
+                {{ t.nav.getStartedFree }}
               </RouterLink>
             </template>
           </div>

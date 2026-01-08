@@ -3,6 +3,9 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import api from "../services/api";
 import { toast } from "../stores/toast";
+import { useI18n } from "../composables/useI18n";
+
+const { t } = useI18n();
 
 const router = useRouter();
 
@@ -42,10 +45,10 @@ const handleSignup = async () => {
     >
       <div class="text-center">
         <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
-          Create an account
+          {{ t.auth.createAccount }}
         </h2>
         <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          Start humanizing your text today
+          {{ t.auth.startHumanizing }}
         </p>
       </div>
 
@@ -55,13 +58,13 @@ const handleSignup = async () => {
             for="name"
             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
-            Name
+            {{ t.auth.name }}
           </label>
           <input
             id="name"
             v-model="name"
             type="text"
-            placeholder="Type your name"
+            :placeholder="t.auth.namePlaceholder"
             required
             class="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
           />
@@ -72,13 +75,13 @@ const handleSignup = async () => {
             for="email"
             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
-            Email
+            {{ t.auth.email }}
           </label>
           <input
             id="email"
             v-model="email"
             type="email"
-            placeholder="Type your email"
+            :placeholder="t.auth.emailPlaceholder"
             required
             class="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
           />
@@ -89,13 +92,13 @@ const handleSignup = async () => {
             for="password"
             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
-            Password
+            {{ t.auth.password }}
           </label>
           <input
             id="password"
             v-model="password"
             type="password"
-            placeholder="Create a password"
+            :placeholder="t.auth.createPassword"
             required
             class="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
           />
@@ -106,7 +109,7 @@ const handleSignup = async () => {
             type="submit"
             class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-black bg-[#67e8f9] hover:bg-[#22d3ee] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400 transition-colors cursor-pointer"
           >
-            Sign up
+            {{ t.auth.signupButton }}
           </button>
 
           <!-- <button 
@@ -127,12 +130,12 @@ const handleSignup = async () => {
 
       <div class="text-center mt-6">
         <p class="text-sm text-gray-500 dark:text-gray-400">
-          Already have an account?
+          {{ t.auth.haveAccount }}
           <RouterLink
             to="/login"
             class="font-medium text-gray-900 dark:text-white hover:underline ml-1"
           >
-            Log in
+            {{ t.auth.login }}
           </RouterLink>
         </p>
       </div>

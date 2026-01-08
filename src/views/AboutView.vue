@@ -1,56 +1,56 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
+import { useI18n } from "../composables/useI18n";
+import { computed } from "vue";
+
+const { t } = useI18n();
 
 const team = [
   {
     name: "Abdellah Khouden",
-    role: "Co-Founder & Developer",
+    roleKey: "coFounderDeveloper",
     image: "/img/us/abdellah.jpg",
     github: "https://github.com/khouden",
     linkedin: "https://www.linkedin.com/in/abdellah-khouden/",
   },
   {
     name: "Noureddine Laktab",
-    role: "Co-Founder & Developer",
+    roleKey: "coFounderDeveloper",
     image: "/img/us/noureddine.jpeg",
     github: "https://github.com/Laktab-Noureddine-code",
     linkedin: "https://www.linkedin.com/in/noureddine-laktab",
   },
 ];
 
-const values = [
+const values = computed(() => [
   {
     icon: "speed",
-    title: "Speed First",
-    description:
-      "We believe your time is valuable. Our AI processes text in seconds, not minutes.",
+    titleKey: "speedFirst",
+    descKey: "speedDesc",
   },
   {
     icon: "accuracy",
-    title: "Precision Matters",
-    description:
-      "Powered by advanced language models to deliver accurate, context-aware results.",
+    titleKey: "precisionMatters",
+    descKey: "precisionDesc",
   },
   {
     icon: "simplicity",
-    title: "Effortless Experience",
-    description:
-      "No complex setups. Just paste your text and get instant results.",
+    titleKey: "effortlessExperience",
+    descKey: "effortlessDesc",
   },
   {
     icon: "privacy",
-    title: "Privacy Focused",
-    description:
-      "Your content stays yours. We don't store or share your text data.",
+    titleKey: "privacyFocused",
+    descKey: "privacyDesc",
   },
-];
+]);
 
-const stats = [
-  { value: "10K+", label: "Translations Completed" },
-  { value: "50+", label: "Languages Supported" },
-  { value: "99.9%", label: "Uptime Guarantee" },
-  { value: "< 2s", label: "Average Response Time" },
-];
+const stats = computed(() => [
+  { value: "10K+", labelKey: "translationsCompleted" },
+  { value: "50+", labelKey: "languagesSupported" },
+  { value: "99.9%", labelKey: "uptimeGuarantee" },
+  { value: "< 2s", labelKey: "averageResponseTime" },
+]);
 </script>
 
 <template>
@@ -63,12 +63,12 @@ const stats = [
         <span
           class="inline-block px-4 py-1.5 mb-6 text-sm font-medium text-cyan-600 dark:text-cyan-400 bg-cyan-100 dark:bg-cyan-900/30 rounded-full"
         >
-          About Us
+          {{ t.about.aboutUs }}
         </span>
         <h1
           class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white mb-6 tracking-tight leading-tight"
         >
-          Breaking Language Barriers with
+          {{ t.about.heroTitle }}
           <span
             class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-cyan-400"
             >AI</span
@@ -77,9 +77,7 @@ const stats = [
         <p
           class="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed"
         >
-          3ssila AI is your intelligent companion for instant text translation
-          and summarization. We're on a mission to make global communication
-          effortless for everyone.
+          {{ t.about.heroDescription }}
         </p>
       </div>
     </section>
@@ -96,23 +94,17 @@ const stats = [
               <h2
                 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6"
               >
-                Our Mission
+                {{ t.about.ourMission }}
               </h2>
               <p
                 class="text-gray-600 dark:text-gray-400 text-lg leading-relaxed mb-6"
               >
-                In today's interconnected world, language should never be a
-                barrier. We built 3ssila AI to empower individuals, students,
-                professionals, and businesses to communicate seamlessly across
-                languages.
+                {{ t.about.missionText1 }}
               </p>
               <p
                 class="text-gray-600 dark:text-gray-400 text-lg leading-relaxed"
               >
-                Whether you're translating important documents, summarizing
-                lengthy articles, or simply trying to understand content in
-                another language—we've got you covered with speed, accuracy, and
-                simplicity.
+                {{ t.about.missionText2 }}
               </p>
             </div>
             <!-- Right: Visual Element -->
@@ -134,7 +126,7 @@ const stats = [
                   />
                 </svg>
                 <p class="text-xl font-semibold opacity-95">
-                  "Empowering seamless communication across every language."
+                  "{{ t.about.missionQuote }}"
                 </p>
               </div>
             </div>
@@ -149,7 +141,7 @@ const stats = [
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div
             v-for="stat in stats"
-            :key="stat.label"
+            :key="stat.labelKey"
             class="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 text-center border border-gray-200 dark:border-gray-800 shadow-lg hover:shadow-xl transition-shadow duration-300"
           >
             <div
@@ -158,7 +150,7 @@ const stats = [
               {{ stat.value }}
             </div>
             <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">
-              {{ stat.label }}
+              {{ t.about[stat.labelKey] }}
             </div>
           </div>
         </div>
@@ -172,18 +164,17 @@ const stats = [
           <h2
             class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4"
           >
-            What We Stand For
+            {{ t.about.whatWeStandFor }}
           </h2>
           <p class="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
-            Our core values drive every feature we build and every decision we
-            make.
+            {{ t.about.valuesSubtitle }}
           </p>
         </div>
 
         <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div
             v-for="value in values"
-            :key="value.title"
+            :key="value.titleKey"
             class="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 border border-gray-200 dark:border-gray-800 shadow-lg hover:shadow-xl hover:border-cyan-400 dark:hover:border-cyan-500 transition-all duration-300 group"
           >
             <!-- Speed Icon -->
@@ -264,10 +255,10 @@ const stats = [
             </div>
 
             <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              {{ value.title }}
+              {{ t.about[value.titleKey] }}
             </h3>
             <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-              {{ value.description }}
+              {{ t.about[value.descKey] }}
             </p>
           </div>
         </div>
@@ -281,11 +272,10 @@ const stats = [
           <h2
             class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4"
           >
-            Meet the Team
+            {{ t.about.meetTheTeam }}
           </h2>
           <p class="text-gray-600 dark:text-gray-400 text-lg max-w-xl mx-auto">
-            The passionate developers behind 3ssila AI, dedicated to making
-            language accessible to everyone.
+            {{ t.about.teamSubtitle }}
           </p>
         </div>
 
@@ -305,7 +295,7 @@ const stats = [
               {{ member.name }}
             </h3>
             <p class="text-cyan-600 dark:text-cyan-400 font-medium mb-4">
-              {{ member.role }}
+              {{ t.about[member.roleKey] }}
             </p>
             <!-- Social Links -->
             <div class="flex items-center justify-center gap-3">
@@ -348,11 +338,10 @@ const stats = [
           class="bg-gradient-to-r from-cyan-500 to-cyan-600 dark:from-cyan-600 dark:to-cyan-700 rounded-3xl p-8 md:p-12 text-center shadow-2xl"
         >
           <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to Break Language Barriers?
+            {{ t.about.readyToBreakBarriers }}
           </h2>
           <p class="text-cyan-100 text-lg mb-8 max-w-xl mx-auto">
-            Have questions, feedback, or partnership ideas? We'd love to hear
-            from you. Get in touch with our team today.
+            {{ t.about.ctaDescription }}
           </p>
           <div
             class="flex flex-col sm:flex-row items-center justify-center gap-4"
@@ -374,13 +363,13 @@ const stats = [
                   d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                 />
               </svg>
-              Contact Us
+              {{ t.about.contactUs }}
             </a>
             <RouterLink
               to="/"
               class="inline-flex items-center gap-2 bg-cyan-700/50 text-white font-bold py-3 px-8 rounded-full hover:bg-cyan-700/70 transition-colors border border-white/20"
             >
-              Try 3ssila AI
+              {{ t.about.try3ssilaAI }}
               <svg
                 class="w-5 h-5"
                 fill="none"

@@ -4,6 +4,9 @@ import { useRouter } from "vue-router";
 import { favorites, type FavoriteItem } from "../stores/favorites";
 import { toast } from "../stores/toast";
 import { confirm } from "../stores/confirm";
+import { useI18n } from "../composables/useI18n";
+
+const { t } = useI18n();
 
 const router = useRouter();
 
@@ -180,11 +183,11 @@ onMounted(() => {
               d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
             />
           </svg>
-          Favorites
+          {{ t.favorites.title }}
         </span>
       </h1>
       <p class="max-w-2xl mx-auto text-gray-600 dark:text-gray-400 text-lg">
-        Your saved translations and summaries for quick access
+        {{ t.favorites.description }}
       </p>
     </div>
 
@@ -212,7 +215,7 @@ onMounted(() => {
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 cursor-pointer',
                   ]"
                 >
-                  All Favorites
+                  {{ t.favorites.all }}
                 </button>
                 <button
                   @click="handleTabChange('summaries')"
@@ -223,7 +226,7 @@ onMounted(() => {
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 cursor-pointer',
                   ]"
                 >
-                  Summaries
+                  {{ t.favorites.summaries }}
                 </button>
                 <button
                   @click="handleTabChange('translations')"
@@ -234,7 +237,7 @@ onMounted(() => {
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 cursor-pointer',
                   ]"
                 >
-                  Translations
+                  {{ t.favorites.translations }}
                 </button>
               </div>
 
@@ -245,7 +248,7 @@ onMounted(() => {
                 :disabled="isDeleting"
                 class="px-4 py-2 rounded-lg font-medium bg-red-500/20 text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700 hover:bg-red-500/30 disabled:opacity-50 transition-all duration-200"
               >
-                Remove Selected ({{ selectedCount }})
+                {{ t.favorites.removeSelected }} ({{ selectedCount }})
               </button>
             </div>
           </div>
@@ -265,24 +268,16 @@ onMounted(() => {
               />
             </svg>
             <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">
-              No {{ activeTab === "all" ? "" : activeTab }} saved yet
+              {{ t.favorites.empty }}
             </h3>
             <p class="mt-1 text-gray-600 dark:text-gray-400">
-              Save your favorite
-              {{
-                activeTab === "summaries"
-                  ? "summaries"
-                  : activeTab === "translations"
-                  ? "translations"
-                  : "translations and summaries"
-              }}
-              for quick access.
+              {{ t.favorites.emptyDescription }}
             </p>
             <button
               @click="router.push('/')"
               class="mt-6 px-6 py-2 bg-cyan-400 hover:bg-cyan-500 text-black font-semibold rounded-lg transition-colors cursor-pointer"
             >
-              Start Translating
+              {{ t.favorites.startTranslating }}
             </button>
           </div>
 
@@ -301,11 +296,16 @@ onMounted(() => {
               <span
                 class="text-sm font-medium text-gray-600 dark:text-gray-400"
               >
-                {{ allSelected ? "Deselect All" : "Select All" }}
+                {{
+                  allSelected ? t.favorites.deselectAll : t.favorites.selectAll
+                }}
               </span>
               <span class="text-sm text-gray-500 dark:text-gray-500 ml-auto">
-                {{ displayedFavorites.length }} favorite{{
-                  displayedFavorites.length !== 1 ? "s" : ""
+                {{ displayedFavorites.length }}
+                {{
+                  displayedFavorites.length !== 1
+                    ? t.favorites.favorites_count
+                    : t.favorites.favorite
                 }}
               </span>
             </div>
@@ -343,7 +343,11 @@ onMounted(() => {
                         : 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300',
                     ]"
                   >
-                    {{ item.type === "summary" ? "Summary" : "Translation" }}
+                    {{
+                      item.type === "summary"
+                        ? t.favorites.summary
+                        : t.favorites.translation
+                    }}
                   </span>
                   <svg
                     class="w-4 h-4 text-yellow-500"
@@ -374,7 +378,7 @@ onMounted(() => {
                     {{ item.targetLanguage }}
                   </span>
                   <span class="text-xs text-gray-500 dark:text-gray-400 ml-auto"
-                    >Saved {{ item.displayDate }}</span
+                    >{{ t.favorites.saved }} {{ item.displayDate }}</span
                   >
                 </div>
 
@@ -398,7 +402,7 @@ onMounted(() => {
                       </svg>
                       <span
                         class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide"
-                        >Input</span
+                        >{{ t.favorites.input }}</span
                       >
                     </div>
                     <p
@@ -431,7 +435,7 @@ onMounted(() => {
                       </svg>
                       <span
                         class="text-xs font-semibold text-yellow-600 dark:text-yellow-400 uppercase tracking-wide"
-                        >Result</span
+                        >{{ t.favorites.result }}</span
                       >
                     </div>
                     <p
@@ -466,7 +470,11 @@ onMounted(() => {
                       d="M19 9l-7 7-7-7"
                     />
                   </svg>
-                  {{ isExpanded(item.id) ? "Show less" : "Show more" }}
+                  {{
+                    isExpanded(item.id)
+                      ? t.favorites.showLess
+                      : t.favorites.showMore
+                  }}
                 </button>
               </div>
 
@@ -476,7 +484,7 @@ onMounted(() => {
                 <button
                   @click="useInTranslator(item)"
                   class="p-2 rounded-lg bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-200 dark:hover:bg-cyan-900/50 transition-colors cursor-pointer"
-                  title="Use in translator"
+                  :title="t.favorites.useInTranslator"
                 >
                   <svg
                     class="w-5 h-5"
@@ -497,7 +505,7 @@ onMounted(() => {
                 <button
                   @click="copyToClipboard(item.resultText)"
                   class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer"
-                  title="Copy result"
+                  :title="t.favorites.copyResult"
                 >
                   <svg
                     class="w-5 h-5"
@@ -519,7 +527,7 @@ onMounted(() => {
                   @click="deleteItem(item.id)"
                   :disabled="isDeleting"
                   class="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors disabled:opacity-50 cursor-pointer"
-                  title="Remove from favorites"
+                  :title="t.favorites.removeFromFavorites"
                 >
                   <svg
                     class="w-5 h-5"

@@ -5,6 +5,7 @@ import api from "../services/api";
 import { auth } from "../stores/auth";
 import { toast } from "../stores/toast";
 import { favorites } from "../stores/favorites";
+import { useI18n } from "../composables/useI18n";
 import {
   speechToText,
   stopSpeechToText,
@@ -16,6 +17,7 @@ import type { SpeechRecognizer } from "microsoft-cognitiveservices-speech-sdk";
 import SkeletonLoader from "../components/SkeletonLoader.vue";
 import BottomSheet from "../components/BottomSheet.vue";
 
+const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 
@@ -674,11 +676,14 @@ const handleExport = async (format: ExportFormat) => {
       <h1
         class="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 tracking-tight"
       >
-        {{ mode === "translate" ? "Translate Content" : "Summarize Text" }}
+        {{ mode === "translate" ? t.home.translate : t.home.summarize }}
       </h1>
       <p class="max-w-2xl mx-auto text-gray-600 dark:text-gray-400 text-lg">
-        Transform your content instantly with our AI-powered tool. Select your
-        mode below to get started.
+        {{ t.home.enterTextAndClick }}
+        {{
+          mode === "translate" ? t.home.translateButton : t.home.summarizeButton
+        }}
+        {{ t.home.toGetStarted }}
       </p>
     </div>
 
@@ -742,7 +747,7 @@ const handleExport = async (format: ExportFormat) => {
               "
               class="px-6 py-2 rounded-full text-sm transition-all duration-200 cursor-pointer"
             >
-              Translate
+              {{ t.home.translate }}
             </button>
             <button
               @click="mode = 'summarize'"
@@ -753,7 +758,7 @@ const handleExport = async (format: ExportFormat) => {
               "
               class="px-6 py-2 rounded-full text-sm transition-all duration-200 cursor-pointer"
             >
-              Summarize
+              {{ t.home.summarize }}
             </button>
             <!-- Mobile swipe hint -->
             <div
@@ -765,7 +770,7 @@ const handleExport = async (format: ExportFormat) => {
 
           <div v-if="mode === 'translate'" class="flex items-center gap-2">
             <label class="text-sm text-gray-500 dark:text-gray-400 font-medium"
-              >Target:</label
+              >{{ t.home.targetLanguage }}:</label
             >
             <div class="relative" ref="targetLangDropdownRef">
               <button
@@ -799,7 +804,7 @@ const handleExport = async (format: ExportFormat) => {
                   <input
                     v-model="targetLangSearch"
                     type="text"
-                    placeholder="Search language..."
+                    :placeholder="t.home.searchLanguages"
                     class="w-full px-3 py-1.5 text-sm rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-cyan-400"
                   />
                 </div>
@@ -826,7 +831,7 @@ const handleExport = async (format: ExportFormat) => {
                     v-if="filteredLanguages.length === 0"
                     class="px-3 py-2 text-sm text-gray-400 italic"
                   >
-                    No languages found
+                    {{ t.common.noResults }}
                   </div>
                 </div>
               </div>
@@ -865,7 +870,7 @@ const handleExport = async (format: ExportFormat) => {
                   ></path>
                 </svg>
                 <p class="text-cyan-600 dark:text-cyan-400 font-medium">
-                  Drop your file here
+                  {{ t.home.dragAndDrop }}
                 </p>
               </div>
             </div>
@@ -897,7 +902,7 @@ const handleExport = async (format: ExportFormat) => {
                   ></path>
                 </svg>
                 <p class="text-cyan-600 dark:text-cyan-400 font-medium">
-                  Processing speech...
+                  {{ t.home.processing }}
                 </p>
               </div>
             </div>
@@ -921,7 +926,7 @@ const handleExport = async (format: ExportFormat) => {
                   ? 'bg-red-500 text-white animate-pulse hover:bg-red-600'
                   : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400',
               ]"
-              :title="isListening ? 'Stop recording' : 'Start voice input'"
+              :title="isListening ? t.home.stopRecording : t.home.voiceInput"
             >
               <svg
                 class="h-5 w-5"
@@ -944,7 +949,7 @@ const handleExport = async (format: ExportFormat) => {
               @click="triggerFileUpload"
               :disabled="isExtracting"
               class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors cursor-pointer disabled:cursor-not-allowed"
-              title="Upload file (PDF, DOCX, PNG, JPEG)"
+              :title="t.home.uploadFileHint"
             >
               <!-- Spinning loader when extracting -->
               <svg
@@ -988,14 +993,14 @@ const handleExport = async (format: ExportFormat) => {
 
             <textarea
               v-model="inputText"
-              placeholder="Insert your text here..."
+              :placeholder="t.home.inputPlaceholder"
               class="w-full flex-1 resize-none outline-none text-gray-700 dark:text-gray-300 text-lg bg-transparent placeholder-gray-400 leading-relaxed pt-10"
             ></textarea>
 
             <div class="mt-4 flex items-center justify-between relative z-10">
               <div class="flex items-center gap-2">
                 <span class="text-xs font-medium text-gray-400"
-                  >{{ characterCount }} characters</span
+                  >{{ characterCount }} {{ t.home.characters }}</span
                 >
                 <span
                   v-if="!auth.isAuthenticated()"
@@ -1060,7 +1065,9 @@ const handleExport = async (format: ExportFormat) => {
                 </svg>
                 <span v-else>
                   {{
-                    mode === "translate" ? "Translate Text" : "Summarize Text"
+                    mode === "translate"
+                      ? t.home.translateButton
+                      : t.home.summarizeButton
                   }}
                 </span>
               </button>
@@ -1073,7 +1080,7 @@ const handleExport = async (format: ExportFormat) => {
             <div
               class="absolute top-4 left-6 text-xs font-bold text-gray-400 uppercase tracking-wider"
             >
-              Result
+              {{ t.home.result }}
             </div>
 
             <!-- Empty state when no loading and no result -->
@@ -1081,7 +1088,7 @@ const handleExport = async (format: ExportFormat) => {
               v-if="!resultText && !isLoading"
               class="flex-1 flex items-center justify-center text-gray-400 italic"
             >
-              <p>Paraphrased text will appear here</p>
+              <p>{{ t.home.noResult }}</p>
             </div>
 
             <!-- Skeleton loader during loading state -->
@@ -1092,10 +1099,13 @@ const handleExport = async (format: ExportFormat) => {
             <!-- Result text display -->
             <div
               v-else
-              class="flex-1 mt-6 overflow-y-auto prose prose-lg max-w-none text-gray-800 dark:text-gray-200 leading-relaxed custom-scrollbar"
+              class="flex-1 mt-6 overflow-y-auto prose prose-lg max-w-none text-gray-800 dark:text-gray-200 leading-relaxed custom-scrollbar result-text-content"
               :dir="isRtlLanguage ? 'rtl' : 'ltr'"
+              :style="{
+                textAlign: isRtlLanguage ? 'right' : 'left',
+                direction: isRtlLanguage ? 'rtl' : 'ltr',
+              }"
               :class="{
-                'text-right': isRtlLanguage,
                 'font-cairo': targetLanguage === 'Arabic',
               }"
             >
@@ -1106,7 +1116,7 @@ const handleExport = async (format: ExportFormat) => {
               class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between"
             >
               <span class="text-xs font-medium text-gray-400"
-                >{{ resultCharacterCount }} characters</span
+                >{{ resultCharacterCount }} {{ t.home.characters }}</span
               >
 
               <div class="flex items-center gap-3">
@@ -1178,7 +1188,11 @@ const handleExport = async (format: ExportFormat) => {
                     ></path>
                   </svg>
                   {{
-                    isPlaying ? "Stop" : isSpeaking ? "Generating..." : "Listen"
+                    isPlaying
+                      ? t.home.stopListening
+                      : isSpeaking
+                      ? t.home.processing
+                      : t.home.listen
                   }}
                 </button>
 
@@ -1201,7 +1215,7 @@ const handleExport = async (format: ExportFormat) => {
                       d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
                     ></path>
                   </svg>
-                  Copy
+                  {{ t.home.copy }}
                 </button>
 
                 <!-- Export dropdown -->
@@ -1210,7 +1224,7 @@ const handleExport = async (format: ExportFormat) => {
                     @click.stop="isExportDropdownOpen = !isExportDropdownOpen"
                     :disabled="isExporting"
                     class="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-cyan-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Export result"
+                    :title="t.home.export"
                   >
                     <svg
                       v-if="isExporting"
@@ -1247,7 +1261,7 @@ const handleExport = async (format: ExportFormat) => {
                         d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                       ></path>
                     </svg>
-                    {{ isExporting ? "Exporting..." : "Export" }}
+                    {{ isExporting ? t.common.loading : t.home.export }}
                     <svg
                       v-if="!isExporting"
                       class="w-3 h-3"
@@ -1328,8 +1342,8 @@ const handleExport = async (format: ExportFormat) => {
                   ]"
                   :title="
                     isCurrentFavorited
-                      ? 'Remove from favorites'
-                      : 'Save to favorites'
+                      ? t.home.removeFromFavorites
+                      : t.home.addToFavorites
                   "
                 >
                   <svg
@@ -1345,7 +1359,7 @@ const handleExport = async (format: ExportFormat) => {
                       d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
                     ></path>
                   </svg>
-                  {{ isCurrentFavorited ? "Saved" : "Save" }}
+                  {{ isCurrentFavorited ? t.common.save : t.common.save }}
                 </button>
 
                 <!-- Clear button -->
@@ -1384,15 +1398,15 @@ const handleExport = async (format: ExportFormat) => {
   <!-- Voice recording bottom sheet / modal -->
   <BottomSheet
     v-model="showMicModal"
-    title="Voice input"
-    subtitle="Choose the language you will speak and start recording."
+    :title="t.home.voiceInput"
+    :subtitle="t.home.speakNow"
     @close="closeMicModal"
   >
     <div class="p-4 md:p-6 space-y-5">
       <div class="space-y-2">
-        <label class="text-sm font-medium text-gray-700 dark:text-gray-200"
-          >Speech language</label
-        >
+        <label class="text-sm font-medium text-gray-700 dark:text-gray-200">{{
+          t.home.speechLanguage
+        }}</label>
         <div class="relative" ref="speechLangDropdownRef">
           <button
             @click.stop="isSpeechLangDropdownOpen = !isSpeechLangDropdownOpen"
@@ -1452,7 +1466,7 @@ const handleExport = async (format: ExportFormat) => {
                 v-if="filteredSpeechLanguages.length === 0"
                 class="px-3 py-2 text-sm text-gray-400 italic"
               >
-                No languages found
+                {{ t.common.noResults }}
               </div>
             </div>
           </div>
@@ -1487,7 +1501,7 @@ const handleExport = async (format: ExportFormat) => {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            {{ isListening ? "Processing audio..." : "Ready to record" }}
+            {{ isListening ? t.home.processing : t.home.startRecording }}
           </div>
           <span
             class="text-xs px-2 py-1 rounded-full"
@@ -1513,21 +1527,21 @@ const handleExport = async (format: ExportFormat) => {
           class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
           @click="closeMicModal"
         >
-          Cancel
+          {{ t.common.cancel }}
         </button>
         <button
           v-if="!isListening"
           class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-cyan-600 hover:bg-cyan-700 shadow cursor-pointer"
           @click="startMicRecording"
         >
-          Start recording
+          {{ t.home.startRecording }}
         </button>
         <button
           v-else
           class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-red-500 hover:bg-red-600 shadow cursor-pointer"
           @click="stopMicRecording"
         >
-          Stop & use text
+          {{ t.home.stopRecording }}
         </button>
       </div>
     </template>

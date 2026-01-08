@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { RouterLink, useRouter } from "vue-router";
+import { useI18n } from "../composables/useI18n";
+
+const { t } = useI18n();
 
 const router = useRouter();
 const currentYear = new Date().getFullYear();
@@ -91,8 +94,7 @@ onMounted(() => {
             <p
               class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-6 max-w-xs"
             >
-              Transform your content instantly with AI-powered translation and
-              summarization. Fast, accurate, and effortless.
+              {{ t.footer.description }}
             </p>
             <!-- Social Links -->
             <div class="flex items-center gap-3">
@@ -118,7 +120,7 @@ onMounted(() => {
                   <p
                     class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700"
                   >
-                    Developers
+                    {{ t.footer.developers }}
                   </p>
                   <a
                     v-for="dev in developers"
@@ -164,7 +166,7 @@ onMounted(() => {
                   <p
                     class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700"
                   >
-                    Developers
+                    {{ t.footer.developers }}
                   </p>
                   <a
                     v-for="dev in developers"
@@ -196,7 +198,7 @@ onMounted(() => {
             <h3
               class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4"
             >
-              Product
+              {{ t.footer.product }}
             </h3>
             <ul class="space-y-3">
               <li>
@@ -204,7 +206,7 @@ onMounted(() => {
                   @click="navigateToMode('translate')"
                   class="text-sm text-gray-600 dark:text-gray-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors duration-200 cursor-pointer"
                 >
-                  Translation
+                  {{ t.footer.translate }}
                 </a>
               </li>
               <li>
@@ -212,7 +214,7 @@ onMounted(() => {
                   @click="navigateToMode('summarize')"
                   class="text-sm text-gray-600 dark:text-gray-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors duration-200 cursor-pointer"
                 >
-                  Summarization
+                  {{ t.footer.summarize }}
                 </a>
               </li>
               <li>
@@ -220,7 +222,7 @@ onMounted(() => {
                   to="/history"
                   class="text-sm text-gray-600 dark:text-gray-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors duration-200"
                 >
-                  History
+                  {{ t.nav.history }}
                 </RouterLink>
               </li>
             </ul>
@@ -231,7 +233,7 @@ onMounted(() => {
             <h3
               class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4"
             >
-              Company
+              {{ t.footer.company }}
             </h3>
             <ul class="space-y-3">
               <li>
@@ -239,7 +241,7 @@ onMounted(() => {
                   to="/about"
                   class="text-sm text-gray-600 dark:text-gray-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors duration-200"
                 >
-                  About Us
+                  {{ t.footer.about }}
                 </RouterLink>
               </li>
               <li>
@@ -255,7 +257,7 @@ onMounted(() => {
                   href="mailto:contact@3ssila-ai.com"
                   class="text-sm text-gray-600 dark:text-gray-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors duration-200"
                 >
-                  Contact
+                  {{ t.footer.contact }}
                 </a>
               </li>
             </ul>
@@ -266,7 +268,7 @@ onMounted(() => {
             <h3
               class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4"
             >
-              Legal
+              {{ t.footer.legal }}
             </h3>
             <ul class="space-y-3">
               <li>
@@ -274,7 +276,7 @@ onMounted(() => {
                   to="/privacy"
                   class="text-sm text-gray-600 dark:text-gray-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors duration-200"
                 >
-                  Privacy Policy
+                  {{ t.footer.privacy }}
                 </RouterLink>
               </li>
               <li>
@@ -282,7 +284,7 @@ onMounted(() => {
                   to="/terms"
                   class="text-sm text-gray-600 dark:text-gray-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors duration-200"
                 >
-                  Terms of Service
+                  {{ t.footer.terms }}
                 </RouterLink>
               </li>
             </ul>
@@ -303,7 +305,7 @@ onMounted(() => {
           © {{ currentYear }}
           <span class="font-medium text-gray-700 dark:text-gray-300"
             >3ssila AI</span
-          >. All rights reserved.
+          >. {{ t.footer.allRightsReserved }}
         </p>
         <div
           class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-500"

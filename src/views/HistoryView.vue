@@ -7,6 +7,9 @@ import { toast } from "../stores/toast";
 import { confirm } from "../stores/confirm";
 import { favorites } from "../stores/favorites";
 import SkeletonLoader from "../components/SkeletonLoader.vue";
+import { useI18n } from "../composables/useI18n";
+
+const { t } = useI18n();
 
 const router = useRouter();
 
@@ -322,10 +325,10 @@ onMounted(() => {
       <h1
         class="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 tracking-tight"
       >
-        History
+        {{ t.history.title }}
       </h1>
       <p class="max-w-2xl mx-auto text-gray-600 dark:text-gray-400 text-lg">
-        View and manage your translation and summarization history
+        {{ t.history.description }}
       </p>
     </div>
 
@@ -353,7 +356,7 @@ onMounted(() => {
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 cursor-pointer',
                   ]"
                 >
-                  All History
+                  {{ t.history.all }}
                 </button>
                 <button
                   @click="handleTabChange('summaries')"
@@ -364,7 +367,7 @@ onMounted(() => {
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 cursor-pointer',
                   ]"
                 >
-                  Summaries
+                  {{ t.history.summaries }}
                 </button>
                 <button
                   @click="handleTabChange('translations')"
@@ -375,7 +378,7 @@ onMounted(() => {
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 cursor-pointer',
                   ]"
                 >
-                  Translations
+                  {{ t.history.translations }}
                 </button>
               </div>
 
@@ -386,7 +389,7 @@ onMounted(() => {
                 :disabled="isDeleting"
                 class="px-4 py-2 rounded-lg font-medium bg-red-500/20 text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700 hover:bg-red-500/30 disabled:opacity-50 transition-all duration-200"
               >
-                Delete Selected ({{ selectedCount }})
+                {{ t.history.deleteSelected }} ({{ selectedCount }})
               </button>
             </div>
           </div>
@@ -415,17 +418,10 @@ onMounted(() => {
               />
             </svg>
             <h3 class="mt-2 text-lg font-medium text-gray-900 dark:text-white">
-              No {{ activeTab === "all" ? "" : activeTab }} history
+              {{ t.history.empty }}
             </h3>
             <p class="mt-1 text-gray-600 dark:text-gray-400">
-              Start by creating a new
-              {{
-                activeTab === "summaries"
-                  ? "summary"
-                  : activeTab === "translations"
-                  ? "translation"
-                  : "summary or translation"
-              }}.
+              {{ t.history.emptyDescription }}
             </p>
           </div>
 
@@ -445,7 +441,7 @@ onMounted(() => {
               <span
                 class="text-sm font-medium text-gray-600 dark:text-gray-400"
               >
-                {{ allSelected ? "Deselect All" : "Select All" }}
+                {{ allSelected ? t.history.deselectAll : t.history.selectAll }}
               </span>
             </div>
 
@@ -484,8 +480,8 @@ onMounted(() => {
                   >
                     {{
                       item.action_type === "summarize"
-                        ? "Summary"
-                        : "Translation"
+                        ? t.history.summary
+                        : t.history.translation
                     }}
                   </span>
                   <span
@@ -536,7 +532,7 @@ onMounted(() => {
                       </svg>
                       <span
                         class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide"
-                        >Input</span
+                        >{{ t.history.input }}</span
                       >
                     </div>
                     <p
@@ -572,7 +568,7 @@ onMounted(() => {
                       </svg>
                       <span
                         class="text-xs font-semibold text-cyan-600 dark:text-cyan-400 uppercase tracking-wide"
-                        >Result</span
+                        >{{ t.history.result }}</span
                       >
                     </div>
                     <p
@@ -609,7 +605,11 @@ onMounted(() => {
                       d="M19 9l-7 7-7-7"
                     />
                   </svg>
-                  {{ isExpanded(item.id) ? "Show less" : "Show more" }}
+                  {{
+                    isExpanded(item.id)
+                      ? t.history.showLess
+                      : t.history.showMore
+                  }}
                 </button>
               </div>
 
@@ -619,7 +619,7 @@ onMounted(() => {
                 <button
                   @click="useInTranslator(item)"
                   class="p-2 rounded-lg bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-200 dark:hover:bg-cyan-900/50 transition-colors cursor-pointer"
-                  title="Use in translator"
+                  :title="t.history.useInTranslator"
                 >
                   <svg
                     class="w-5 h-5"
@@ -647,7 +647,7 @@ onMounted(() => {
                     )
                   "
                   class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer"
-                  title="Copy result"
+                  :title="t.history.copyResult"
                 >
                   <svg
                     class="w-5 h-5"
@@ -675,8 +675,8 @@ onMounted(() => {
                   ]"
                   :title="
                     isItemFavorited(item)
-                      ? 'Remove from favorites'
-                      : 'Save to favorites'
+                      ? t.history.removeFromFavorites
+                      : t.history.saveToFavorites
                   "
                 >
                   <svg
@@ -699,7 +699,7 @@ onMounted(() => {
                   @click="deleteItem(item.id)"
                   :disabled="isDeleting"
                   class="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors disabled:opacity-50 cursor-pointer"
-                  title="Delete"
+                  :title="t.history.delete"
                 >
                   <svg
                     class="w-5 h-5"
@@ -731,7 +731,7 @@ onMounted(() => {
               :disabled="currentPage === 1"
               class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              ← Previous
+              ← {{ t.history.previous }}
             </button>
 
             <!-- Page Numbers -->
@@ -756,7 +756,7 @@ onMounted(() => {
               :disabled="currentPage === totalPages"
               class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              Next →
+              {{ t.history.next }} →
             </button>
           </div>
 
@@ -764,8 +764,12 @@ onMounted(() => {
           <div
             class="text-center mt-3 text-xs text-gray-600 dark:text-gray-400"
           >
-            Page {{ currentPage }} of {{ totalPages }} ({{ totalItems }} total
-            items)
+            {{
+              t.history.pageOf
+                .replace("{current}", currentPage)
+                .replace("{total}", totalPages)
+                .replace("{items}", totalItems)
+            }}
           </div>
         </div>
       </div>
