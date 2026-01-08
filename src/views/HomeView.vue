@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import api from "../services/api";
 import { auth } from "../stores/auth";
 import { toast } from "../stores/toast";
+import {
+  speechToText,
+  stopSpeechToText,
+  textToSpeech,
+} from "../services/speech";
+import type { SpeechRecognizer } from "microsoft-cognitiveservices-speech-sdk";
 
 const router = useRouter();
 const route = useRoute();
@@ -58,16 +64,68 @@ const CHARACTER_LIMIT = 250;
 // Voice capabilities
 const isListening = ref(false);
 const isSpeaking = ref(false);
-let recognition: any = null;
+let azureRecognizer: SpeechRecognizer | null = null;
+const baseSpeechText = ref("");
+const interimTranscript = ref("");
+const showMicModal = ref(false);
+const speechLanguageSelection = ref("French");
+const isSpeechLangDropdownOpen = ref(false);
+const speechLangSearch = ref("");
+const targetLangSearch = ref("");
+const targetLangDropdownRef = ref<HTMLElement | null>(null);
+const speechLangDropdownRef = ref<HTMLElement | null>(null);
 
-// Check if Speech Recognition is supported
-const isSpeechRecognitionSupported =
-  "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
+// Click outside handler
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as Node;
+  if (
+    targetLangDropdownRef.value &&
+    !targetLangDropdownRef.value.contains(target)
+  ) {
+    isLanguageDropdownOpen.value = false;
+    targetLangSearch.value = "";
+  }
+  if (
+    speechLangDropdownRef.value &&
+    !speechLangDropdownRef.value.contains(target)
+  ) {
+    isSpeechLangDropdownOpen.value = false;
+    speechLangSearch.value = "";
+  }
+};
 
-// Check if Speech Synthesis is supported
-const isSpeechSynthesisSupported = "speechSynthesis" in window;
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
+
+// Speech capabilities are available (using Azure Cognitive Services)
+const isSpeechRecognitionSupported = true;
+const isSpeechSynthesisSupported = true;
 
 // --- Computed ---
+const filteredLanguages = computed(() => {
+  const query = targetLangSearch.value.toLowerCase().trim();
+  if (!query) return languages;
+  return languages.filter((lang) => lang.name.toLowerCase().includes(query));
+});
+
+const filteredSpeechLanguages = computed(() => {
+  const query = speechLangSearch.value.toLowerCase().trim();
+  if (!query) return languages;
+  return languages.filter((lang) => lang.name.toLowerCase().includes(query));
+});
+
+const selectedSpeechLanguage = computed(() => {
+  return (
+    languages.find((lang) => lang.name === speechLanguageSelection.value) ||
+    languages[0]
+  );
+});
+
 const selectedLanguage = computed(() => {
   return (
     languages.find((lang) => lang.name === targetLanguage.value) || languages[0]
@@ -210,26 +268,54 @@ const handleDrop = async (event: DragEvent) => {
   }
 };
 
-const closeLanguageDropdown = () => {
-  setTimeout(() => (isLanguageDropdownOpen.value = false), 150);
+// Mic modal handlers
+const openMicModal = () => {
+  speechLanguageSelection.value = targetLanguage.value;
+  showMicModal.value = true;
+};
+
+const closeMicModal = () => {
+  if (isListening.value && azureRecognizer) {
+    stopSpeechToText(azureRecognizer);
+  }
+  azureRecognizer = null;
+  isListening.value = false;
+  interimTranscript.value = "";
+  baseSpeechText.value = inputText.value.trim();
+  showMicModal.value = false;
+};
+
+const startMicRecording = async () => {
+  if (isListening.value) return;
+  await toggleMicrophone(speechLanguageSelection.value);
+};
+
+const stopMicRecording = () => {
+  if (!isListening.value) return;
+  toggleMicrophone(speechLanguageSelection.value);
+  showMicModal.value = false;
 };
 
 // Voice handler: Toggle microphone for speech recognition
-const toggleMicrophone = async () => {
+const toggleMicrophone = async (languageName?: string) => {
   if (!isSpeechRecognitionSupported) {
-    toast.error("Speech recognition is not supported in your browser");
+    toast.error("Speech recognition is not supported");
     return;
   }
 
   // Stop if already listening
-  if (isListening.value && recognition) {
+  if (isListening.value && azureRecognizer) {
     try {
-      recognition.stop();
-    } catch (e) {
-      // Ignore errors when stopping
+      stopSpeechToText(azureRecognizer);
+      azureRecognizer = null;
+      isListening.value = false;
+      interimTranscript.value = "";
+      baseSpeechText.value = inputText.value.trim();
+      toast.success("Speech recognition stopped");
+    } catch (error: any) {
+      console.error("Error stopping recognition:", error);
+      toast.error("Failed to stop speech recognition");
     }
-    recognition = null;
-    isListening.value = false;
     return;
   }
 
@@ -250,147 +336,79 @@ const toggleMicrophone = async () => {
     return;
   }
 
-  // Create a fresh recognition instance each time
+  // Start Azure speech recognition
   try {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
+    baseSpeechText.value = inputText.value.trim();
+    interimTranscript.value = "";
 
-    recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = "en-US";
-    recognition.maxAlternatives = 1;
+    const speechLang =
+      languageName || speechLanguageSelection.value || targetLanguage.value;
+    azureRecognizer = speechToText(speechLang, {
+      onRecognizing: (transcript: string) => {
+        // Update input text with interim results without duplicating words
+        if (!transcript) return;
+        interimTranscript.value = transcript;
+        const combined = [baseSpeechText.value, interimTranscript.value]
+          .filter(Boolean)
+          .join(" ")
+          .trim();
+        inputText.value = combined;
+      },
+      onRecognized: (transcript: string) => {
+        // Append final recognized text
+        if (!transcript) return;
+        baseSpeechText.value = [baseSpeechText.value, transcript]
+          .filter(Boolean)
+          .join(" ")
+          .trim();
+        interimTranscript.value = "";
+        inputText.value = baseSpeechText.value;
+      },
+      onError: (error: string) => {
+        console.error("Speech recognition error:", error);
+        isListening.value = false;
+        azureRecognizer = null;
+        interimTranscript.value = "";
+        baseSpeechText.value = inputText.value.trim();
+        toast.error(error);
+      },
+      onSessionStopped: () => {
+        isListening.value = false;
+        azureRecognizer = null;
+        interimTranscript.value = "";
+        baseSpeechText.value = inputText.value.trim();
+      },
+    });
 
-    recognition.onstart = () => {
+    if (azureRecognizer) {
       isListening.value = true;
-    };
-
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      inputText.value += (inputText.value ? " " : "") + transcript;
-    };
-
-    recognition.onerror = (event: any) => {
-      console.error("Speech recognition error:", event.error);
-      isListening.value = false;
-      recognition = null;
-
-      // Check if the issue is related to insecure context
-      const isSecure =
-        window.location.protocol === "https:" ||
-        window.location.hostname === "localhost";
-
-      // Provide user-friendly error messages
-      const errorMessages: { [key: string]: string } = {
-        network: isSecure
-          ? "Speech recognition service unavailable. The browser's speech service may be down. Please try again later."
-          : "Speech recognition requires HTTPS. Your site is running on HTTP. Deploy to a secure (HTTPS) server or use localhost for testing.",
-        "not-allowed":
-          "Microphone access denied. Please allow microphone permissions in your browser settings.",
-        "no-speech": "No speech detected. Please try again.",
-        "audio-capture":
-          "No microphone found or microphone is being used by another application.",
-        aborted: "Speech recognition was cancelled.",
-        "language-not-supported":
-          "The selected language is not supported for speech recognition.",
-        "service-not-allowed": isSecure
-          ? "Speech recognition service is not allowed. Please check your browser settings."
-          : "Speech recognition requires HTTPS. Please deploy to a secure server.",
-      };
-
-      const message =
-        errorMessages[event.error] ||
-        `Speech recognition error: ${event.error}`;
-
-      // Only show error for significant issues
-      if (event.error !== "no-speech" && event.error !== "aborted") {
-        toast.error(message);
-      }
-    };
-
-    recognition.onend = () => {
-      isListening.value = false;
-      recognition = null;
-    };
-
-    // Start recognition
-    recognition.start();
+      toast.success("Listening... (speak now)");
+    } else {
+      toast.error("Failed to initialize speech recognition");
+    }
   } catch (error: any) {
     console.error("Failed to start recognition:", error);
     isListening.value = false;
-    recognition = null;
+    azureRecognizer = null;
     toast.error("Failed to start speech recognition. Please try again.");
   }
 };
 
 // Voice handler: Read result text aloud
-const readResult = () => {
-  if (!("speechSynthesis" in window)) {
-    toast.error("Speech synthesis is not supported in your browser");
-    return;
-  }
-
-  if (isSpeaking.value) {
-    window.speechSynthesis.cancel();
-    isSpeaking.value = false;
-  } else {
-    const utterance = new SpeechSynthesisUtterance(resultText.value);
-
-    // Map target language to speech synthesis language codes
-    const languageMap: { [key: string]: string } = {
-      French: "fr-FR",
-      English: "en-US",
-      Spanish: "es-ES",
-      German: "de-DE",
-      Italian: "it-IT",
-      Portuguese: "pt-PT",
-      Chinese: "zh-CN",
-      Japanese: "ja-JP",
-      Korean: "ko-KR",
-      Arabic: "ar-SA",
-      Hindi: "hi-IN",
-      Russian: "ru-RU",
-      Dutch: "nl-NL",
-      Polish: "pl-PL",
-      Swedish: "sv-SE",
-      Norwegian: "nb-NO",
-      Danish: "da-DK",
-      Finnish: "fi-FI",
-      Greek: "el-GR",
-      Turkish: "tr-TR",
-      Vietnamese: "vi-VN",
-      Thai: "th-TH",
-      Indonesian: "id-ID",
-      Malay: "ms-MY",
-      Czech: "cs-CZ",
-      Romanian: "ro-RO",
-      Hungarian: "hu-HU",
-      Ukrainian: "uk-UA",
-      Bengali: "bn-BD",
-      Urdu: "ur-PK",
-      Swahili: "sw-KE",
-    };
-
-    utterance.lang = languageMap[targetLanguage.value] || "en-US";
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-
-    utterance.onstart = () => {
+const readResult = async () => {
+  if (!isSpeaking.value) {
+    try {
       isSpeaking.value = true;
-    };
-
-    utterance.onend = () => {
+      await textToSpeech(resultText.value, targetLanguage.value, (error) => {
+        toast.error(error);
+      });
       isSpeaking.value = false;
-    };
-
-    utterance.onerror = (event: any) => {
-      console.error("Speech synthesis error:", event.error);
+      toast.success("Done reading");
+    } catch (error: any) {
+      console.error("Speech synthesis error:", error);
       isSpeaking.value = false;
-      toast.error("Speech synthesis error: " + event.error);
-    };
-
-    window.speechSynthesis.speak(utterance);
+      toast.error("Speech synthesis failed: " + error.message);
+    }
   }
 };
 </script>
@@ -413,10 +431,10 @@ const readResult = () => {
 
     <div class="max-w-6xl mx-auto px-4 pb-20">
       <div
-        class="bg-white dark:bg-[#1a1a1a] rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-[600px]"
+        class="bg-white dark:bg-[#1a1a1a] rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col h-[600px]"
       >
         <div
-          class="flex flex-col sm:flex-row items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-[#252525] px-4 py-3 gap-4"
+          class="flex flex-col sm:flex-row items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-[#252525] px-4 py-3 gap-4 rounded-t-3xl overflow-visible relative z-20"
         >
           <div
             class="flex space-x-1 bg-gray-200 dark:bg-gray-800 p-1 rounded-full"
@@ -449,10 +467,9 @@ const readResult = () => {
             <label class="text-sm text-gray-500 dark:text-gray-400 font-medium"
               >Target:</label
             >
-            <div class="relative">
+            <div class="relative" ref="targetLangDropdownRef">
               <button
-                @click="isLanguageDropdownOpen = !isLanguageDropdownOpen"
-                @blur="closeLanguageDropdown"
+                @click.stop="isLanguageDropdownOpen = !isLanguageDropdownOpen"
                 class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-1.5 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 cursor-pointer"
               >
                 <span :class="`fi fi-${selectedLanguage?.code}`"></span>
@@ -474,24 +491,44 @@ const readResult = () => {
               <!-- Dropdown -->
               <div
                 v-if="isLanguageDropdownOpen"
-                class="absolute top-full left-0 mt-1 w-44 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto"
+                @click.stop
+                class="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 overflow-hidden"
               >
-                <button
-                  v-for="lang in languages"
-                  :key="lang.code"
-                  @mousedown.prevent="
-                    targetLanguage = lang.name;
-                    isLanguageDropdownOpen = false;
-                  "
-                  class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                  :class="{
-                    'bg-cyan-50 dark:bg-cyan-900/30':
-                      targetLanguage === lang.name,
-                  }"
-                >
-                  <span :class="`fi fi-${lang.code}`"></span>
-                  <span>{{ lang.name }}</span>
-                </button>
+                <!-- Search input -->
+                <div class="p-2 border-b border-gray-200 dark:border-gray-700">
+                  <input
+                    v-model="targetLangSearch"
+                    type="text"
+                    placeholder="Search language..."
+                    class="w-full px-3 py-1.5 text-sm rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                  />
+                </div>
+                <!-- Language list -->
+                <div class="max-h-48 overflow-y-auto">
+                  <button
+                    v-for="lang in filteredLanguages"
+                    :key="lang.code"
+                    @mousedown.prevent="
+                      targetLanguage = lang.name;
+                      isLanguageDropdownOpen = false;
+                      targetLangSearch = '';
+                    "
+                    class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                    :class="{
+                      'bg-cyan-50 dark:bg-cyan-900/30':
+                        targetLanguage === lang.name,
+                    }"
+                  >
+                    <span :class="`fi fi-${lang.code}`"></span>
+                    <span>{{ lang.name }}</span>
+                  </button>
+                  <div
+                    v-if="filteredLanguages.length === 0"
+                    class="px-3 py-2 text-sm text-gray-400 italic"
+                  >
+                    No languages found
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -545,7 +582,7 @@ const readResult = () => {
             <!-- Microphone button -->
             <button
               v-if="isSpeechRecognitionSupported"
-              @click="toggleMicrophone"
+              @click="openMicModal"
               :class="[
                 'absolute top-4 right-16 p-2 rounded-full transition-colors cursor-pointer',
                 isListening
@@ -782,9 +819,249 @@ const readResult = () => {
       </div>
     </div>
   </div>
+
+  <!-- Voice recording modal -->
+  <div
+    v-if="showMicModal"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
+  >
+    <div
+      class="bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200 dark:border-gray-700 p-6 space-y-5"
+    >
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+            Voice input
+          </h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Choose the language you will speak and start recording.
+          </p>
+        </div>
+        <button
+          @click="closeMicModal"
+          class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 cursor-pointer"
+          aria-label="Close"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-sm font-medium text-gray-700 dark:text-gray-200"
+          >Speech language</label
+        >
+        <div class="relative" ref="speechLangDropdownRef">
+          <button
+            @click.stop="isSpeechLangDropdownOpen = !isSpeechLangDropdownOpen"
+            class="w-full flex items-center gap-2 bg-white dark:bg-[#161616] border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100 py-2.5 pl-3 pr-10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer"
+          >
+            <span :class="`fi fi-${selectedSpeechLanguage?.code}`"></span>
+            <span>{{ selectedSpeechLanguage?.name }}</span>
+          </button>
+          <div
+            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500"
+          >
+            <svg
+              class="fill-current h-4 w-4"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+            >
+              <path
+                d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+              />
+            </svg>
+          </div>
+          <!-- Dropdown -->
+          <div
+            v-if="isSpeechLangDropdownOpen"
+            @click.stop
+            class="absolute top-full left-0 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 overflow-hidden"
+          >
+            <!-- Search input -->
+            <div class="p-2 border-b border-gray-200 dark:border-gray-700">
+              <input
+                v-model="speechLangSearch"
+                type="text"
+                placeholder="Search language..."
+                class="w-full px-3 py-1.5 text-sm rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              />
+            </div>
+            <!-- Language list -->
+            <div class="max-h-48 overflow-y-auto">
+              <button
+                v-for="lang in filteredSpeechLanguages"
+                :key="lang.code"
+                @mousedown.prevent="
+                  speechLanguageSelection = lang.name;
+                  isSpeechLangDropdownOpen = false;
+                  speechLangSearch = '';
+                "
+                class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                :class="{
+                  'bg-cyan-50 dark:bg-cyan-900/30':
+                    speechLanguageSelection === lang.name,
+                }"
+              >
+                <span :class="`fi fi-${lang.code}`"></span>
+                <span>{{ lang.name }}</span>
+              </button>
+              <div
+                v-if="filteredSpeechLanguages.length === 0"
+                class="px-3 py-2 text-sm text-gray-400 italic"
+              >
+                No languages found
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="bg-gray-50 dark:bg-gray-900/40 rounded-xl border border-gray-200 dark:border-gray-700 p-4"
+      >
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-sm font-medium text-gray-700 dark:text-gray-200">
+            {{ isListening ? "Listening..." : "Ready to record" }}
+          </div>
+          <span
+            class="text-xs px-2 py-1 rounded-full"
+            :class="
+              isListening
+                ? 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-200'
+                : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'
+            "
+          >
+            {{ isListening ? "LIVE" : "IDLE" }}
+          </span>
+        </div>
+
+        <div class="waveform" :class="{ 'waveform-active': isListening }">
+          <span v-for="bar in 12" :key="bar" class="wave-bar"></span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3">
+        <button
+          class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800  cursor-pointer"
+          @click="closeMicModal"
+        >
+          Cancel
+        </button>
+        <button
+          v-if="!isListening"
+          class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-cyan-600 hover:bg-cyan-700 shadow cursor-pointer"
+          @click="startMicRecording"
+        >
+          Start recording
+        </button>
+        <button
+          v-else
+          class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-red-500 hover:bg-red-600 shadow cursor-pointer"
+          @click="stopMicRecording"
+        >
+          Stop & use text
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
+/* Voice waveform */
+.waveform {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(4px, 1fr));
+  align-items: end;
+  gap: 6px;
+  height: 48px;
+}
+
+.wave-bar {
+  display: block;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #22d3ee 0%, #0ea5e9 100%);
+  opacity: 0.35;
+  transition: height 120ms ease, opacity 120ms ease;
+}
+
+.waveform-active .wave-bar {
+  animation: wave 900ms ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 45ms);
+  opacity: 0.9;
+}
+
+.wave-bar:nth-child(1) {
+  --i: 1;
+}
+.wave-bar:nth-child(2) {
+  --i: 2;
+}
+.wave-bar:nth-child(3) {
+  --i: 3;
+}
+.wave-bar:nth-child(4) {
+  --i: 4;
+}
+.wave-bar:nth-child(5) {
+  --i: 5;
+}
+.wave-bar:nth-child(6) {
+  --i: 6;
+}
+.wave-bar:nth-child(7) {
+  --i: 7;
+}
+.wave-bar:nth-child(8) {
+  --i: 8;
+}
+.wave-bar:nth-child(9) {
+  --i: 9;
+}
+.wave-bar:nth-child(10) {
+  --i: 10;
+}
+.wave-bar:nth-child(11) {
+  --i: 11;
+}
+.wave-bar:nth-child(12) {
+  --i: 12;
+}
+
+@keyframes wave {
+  0% {
+    height: 12%;
+  }
+  20% {
+    height: 95%;
+  }
+  40% {
+    height: 45%;
+  }
+  60% {
+    height: 85%;
+  }
+  80% {
+    height: 30%;
+  }
+  100% {
+    height: 12%;
+  }
+}
+
 /* Custom scrollbar for the text areas */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
