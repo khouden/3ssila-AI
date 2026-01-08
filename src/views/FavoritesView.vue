@@ -12,6 +12,7 @@ const activeTab = ref<"all" | "summaries" | "translations">("all");
 const isDark = ref(true);
 const selectedItems = ref<Set<string>>(new Set());
 const isDeleting = ref(false);
+const expandedItems = ref<Set<string>>(new Set());
 
 // --- Computed ---
 const displayedFavorites = computed(() => {
@@ -65,6 +66,18 @@ const toggleSelect = (itemId: string) => {
   } else {
     selectedItems.value.add(itemId);
   }
+};
+
+const toggleExpand = (itemId: string) => {
+  if (expandedItems.value.has(itemId)) {
+    expandedItems.value.delete(itemId);
+  } else {
+    expandedItems.value.add(itemId);
+  }
+};
+
+const isExpanded = (itemId: string): boolean => {
+  return expandedItems.value.has(itemId);
 };
 
 const deleteItem = async (itemId: string) => {
@@ -320,8 +333,8 @@ onMounted(() => {
 
               <!-- Content -->
               <div class="flex-1 min-w-0">
-                <!-- Type Badge & Date -->
-                <div class="flex items-center gap-2 mb-2">
+                <!-- Header: Type Badge, Language & Date -->
+                <div class="flex flex-wrap items-center gap-2 mb-3">
                   <span
                     :class="[
                       'inline-flex px-3 py-1 rounded-full text-xs font-bold',
@@ -341,50 +354,120 @@ onMounted(() => {
                       d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
                     />
                   </svg>
-                  <span class="text-xs text-gray-500 dark:text-gray-400">
-                    Saved {{ item.displayDate }}
-                  </span>
-                </div>
-
-                <!-- Input Text -->
-                <div class="mb-2">
-                  <p
-                    class="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1"
+                  <span
+                    v-if="item.targetLanguage"
+                    class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300"
                   >
-                    Input:
-                  </p>
-                  <p
-                    class="text-sm text-gray-700 dark:text-gray-300 line-clamp-2"
-                  >
-                    {{ item.inputText }}
-                  </p>
-                </div>
-
-                <!-- Target Language (for translations) -->
-                <div v-if="item.targetLanguage" class="mb-2">
-                  <p
-                    class="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1"
-                  >
-                    Target Language:
-                  </p>
-                  <p class="text-sm text-gray-700 dark:text-gray-300">
+                    <svg
+                      class="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+                      />
+                    </svg>
                     {{ item.targetLanguage }}
-                  </p>
+                  </span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400 ml-auto"
+                    >Saved {{ item.displayDate }}</span
+                  >
                 </div>
 
-                <!-- Result Text -->
-                <div>
-                  <p
-                    class="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1"
+                <!-- Input & Result Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <!-- Input Panel -->
+                  <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-3">
+                    <div class="flex items-center gap-2 mb-2">
+                      <svg
+                        class="w-4 h-4 text-gray-500 dark:text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
+                      </svg>
+                      <span
+                        class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide"
+                        >Input</span
+                      >
+                    </div>
+                    <p
+                      :class="[
+                        'text-sm text-gray-700 dark:text-gray-300',
+                        isExpanded(item.id) ? '' : 'line-clamp-3',
+                      ]"
+                    >
+                      {{ item.inputText }}
+                    </p>
+                  </div>
+
+                  <!-- Result Panel -->
+                  <div
+                    class="bg-yellow-50 dark:bg-yellow-950/30 rounded-lg p-3 border border-yellow-200 dark:border-yellow-800"
                   >
-                    Result:
-                  </p>
-                  <p
-                    class="text-sm text-gray-700 dark:text-gray-300 line-clamp-3"
-                  >
-                    {{ item.resultText }}
-                  </p>
+                    <div class="flex items-center gap-2 mb-2">
+                      <svg
+                        class="w-4 h-4 text-yellow-600 dark:text-yellow-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span
+                        class="text-xs font-semibold text-yellow-600 dark:text-yellow-400 uppercase tracking-wide"
+                        >Result</span
+                      >
+                    </div>
+                    <p
+                      :class="[
+                        'text-sm text-gray-800 dark:text-gray-200',
+                        isExpanded(item.id) ? '' : 'line-clamp-3',
+                      ]"
+                    >
+                      {{ item.resultText }}
+                    </p>
+                  </div>
                 </div>
+
+                <!-- Expand/Collapse Button -->
+                <button
+                  @click="toggleExpand(item.id)"
+                  class="mt-2 flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-yellow-600 dark:hover:text-yellow-400 transition-colors cursor-pointer"
+                >
+                  <svg
+                    :class="[
+                      'w-4 h-4 transition-transform',
+                      isExpanded(item.id) ? 'rotate-180' : '',
+                    ]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                  {{ isExpanded(item.id) ? "Show less" : "Show more" }}
+                </button>
               </div>
 
               <!-- Actions -->

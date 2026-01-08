@@ -190,6 +190,7 @@ const getCloseButtonClasses = (type: string) => {
                 ? 'bg-amber-500'
                 : 'bg-blue-500',
             ]"
+            :style="{ animationDuration: (t.duration || 8000) + 'ms' }"
           ></div>
         </div>
       </div>
@@ -223,7 +224,7 @@ const getCloseButtonClasses = (type: string) => {
 }
 
 .animate-progress {
-  animation: progress 3s linear forwards;
+  animation: progress 8s linear forwards;
 }
 
 /* Vue transition classes */

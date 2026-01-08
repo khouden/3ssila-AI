@@ -10,7 +10,9 @@ import {
   stopSpeechToText,
   textToSpeech,
 } from "../services/speech";
+import { exportResult, type ExportFormat } from "../services/export";
 import type { SpeechRecognizer } from "microsoft-cognitiveservices-speech-sdk";
+import SkeletonLoader from "../components/SkeletonLoader.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -77,6 +79,11 @@ const targetLangSearch = ref("");
 const targetLangDropdownRef = ref<HTMLElement | null>(null);
 const speechLangDropdownRef = ref<HTMLElement | null>(null);
 
+// Export dropdown state
+const isExportDropdownOpen = ref(false);
+const isExporting = ref(false);
+const exportDropdownRef = ref<HTMLElement | null>(null);
+
 // Click outside handler
 const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as Node;
@@ -93,6 +100,9 @@ const handleClickOutside = (event: MouseEvent) => {
   ) {
     isSpeechLangDropdownOpen.value = false;
     speechLangSearch.value = "";
+  }
+  if (exportDropdownRef.value && !exportDropdownRef.value.contains(target)) {
+    isExportDropdownOpen.value = false;
   }
 };
 
@@ -470,6 +480,32 @@ const readResult = async () => {
     }
   }
 };
+
+// Export handler
+const handleExport = async (format: ExportFormat) => {
+  if (!resultText.value) return;
+
+  isExporting.value = true;
+  isExportDropdownOpen.value = false;
+
+  try {
+    await exportResult(format, {
+      inputText: inputText.value,
+      resultText: resultText.value,
+      mode: mode.value,
+      targetLanguage:
+        mode.value === "translate" ? targetLanguage.value : undefined,
+    });
+    toast.success(`Exported as ${format.toUpperCase()} successfully!`);
+  } catch (error: any) {
+    console.error("Export error:", error);
+    toast.error(
+      `Failed to export as ${format.toUpperCase()}: ${error.message}`
+    );
+  } finally {
+    isExporting.value = false;
+  }
+};
 </script>
 
 <template>
@@ -595,7 +631,7 @@ const readResult = async () => {
 
         <div class="flex-1 flex flex-col md:flex-row min-h-0">
           <div
-            class="flex-1 p-6 flex flex-col relative border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] transition-colors md:rounded-bl-3xl"
+            class="flex-1 p-6 flex flex-col relative border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] md:rounded-bl-3xl"
             :class="{
               'bg-cyan-50 dark:bg-cyan-900/20 border-cyan-400 border-2 border-dashed':
                 isDragging,
@@ -831,6 +867,7 @@ const readResult = async () => {
               Result
             </div>
 
+            <!-- Empty state when no loading and no result -->
             <div
               v-if="!resultText && !isLoading"
               class="flex-1 flex items-center justify-center text-gray-400 italic"
@@ -838,6 +875,12 @@ const readResult = async () => {
               <p>Paraphrased text will appear here</p>
             </div>
 
+            <!-- Skeleton loader during loading state -->
+            <div v-else-if="isLoading" class="flex-1 mt-6 overflow-y-auto">
+              <SkeletonLoader type="result" />
+            </div>
+
+            <!-- Result text display -->
             <div
               v-else
               class="flex-1 mt-6 overflow-y-auto prose prose-lg max-w-none text-gray-800 dark:text-gray-200 leading-relaxed custom-scrollbar"
@@ -932,6 +975,118 @@ const readResult = async () => {
                   </svg>
                   Copy
                 </button>
+
+                <!-- Export dropdown -->
+                <div v-if="resultText" class="relative" ref="exportDropdownRef">
+                  <button
+                    @click.stop="isExportDropdownOpen = !isExportDropdownOpen"
+                    :disabled="isExporting"
+                    class="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-cyan-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Export result"
+                  >
+                    <svg
+                      v-if="isExporting"
+                      class="animate-spin w-4 h-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      ></circle>
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <svg
+                      v-else
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      ></path>
+                    </svg>
+                    {{ isExporting ? "Exporting..." : "Export" }}
+                    <svg
+                      v-if="!isExporting"
+                      class="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
+                    </svg>
+                  </button>
+                  <!-- Export dropdown menu -->
+                  <div
+                    v-if="isExportDropdownOpen"
+                    class="absolute bottom-full left-0 mb-2 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-50 overflow-hidden"
+                  >
+                    <button
+                      @click="handleExport('pdf')"
+                      class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                    >
+                      <svg
+                        class="w-4 h-4 text-red-500"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zm-3 9.5c0 .83-.67 1.5-1.5 1.5H7v2H5.5v-6H8.5c.83 0 1.5.67 1.5 1.5v1zm5 3.5h-1.5v-6h1.5c1.38 0 2.5 1.12 2.5 2.5v1c0 1.38-1.12 2.5-2.5 2.5zm-9-4v1H7v-1h1.5zm8 3c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H14v3h1.5z"
+                        />
+                      </svg>
+                      PDF
+                    </button>
+                    <button
+                      @click="handleExport('docx')"
+                      class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                    >
+                      <svg
+                        class="w-4 h-4 text-blue-500"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM5.5 14h1.75l.75 2.5.75-2.5h1.75l-1.5 4h-1.5l-.75-2.5-.75 2.5h-1.5l-1-4z"
+                        />
+                      </svg>
+                      DOCX
+                    </button>
+                    <button
+                      @click="handleExport('txt')"
+                      class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                    >
+                      <svg
+                        class="w-4 h-4 text-gray-500"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM6 17v-2h8v2H6zm0-4v-2h12v2H6z"
+                        />
+                      </svg>
+                      TXT
+                    </button>
+                  </div>
+                </div>
 
                 <!-- Save to Favorites button -->
                 <button

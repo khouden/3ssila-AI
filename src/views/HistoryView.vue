@@ -6,6 +6,7 @@ import { auth } from "../stores/auth";
 import { toast } from "../stores/toast";
 import { confirm } from "../stores/confirm";
 import { favorites } from "../stores/favorites";
+import SkeletonLoader from "../components/SkeletonLoader.vue";
 
 const router = useRouter();
 
@@ -20,6 +21,7 @@ const totalItems = ref(0);
 const isDark = ref(true);
 const selectedItems = ref<Set<string>>(new Set());
 const isDeleting = ref(false);
+const expandedItems = ref<Set<string>>(new Set());
 
 // --- Computed ---
 const displayedHistory = computed(() => {
@@ -136,6 +138,18 @@ const toggleSelect = (itemId: string) => {
   }
 };
 
+const toggleExpand = (itemId: string) => {
+  if (expandedItems.value.has(itemId)) {
+    expandedItems.value.delete(itemId);
+  } else {
+    expandedItems.value.add(itemId);
+  }
+};
+
+const isExpanded = (itemId: string): boolean => {
+  return expandedItems.value.has(itemId);
+};
+
 const deleteItem = async (itemId: string) => {
   const item = history.value.find((h) => h.id === itemId);
   const isSummary = item?.action_type === "summarize";
@@ -237,6 +251,29 @@ const toggleItemFavorite = (item: any) => {
   } else {
     toast.success("Removed from favorites");
   }
+};
+
+const useInTranslator = (item: any) => {
+  const isSummary = item.action_type === "summarize";
+  const inputText = item.input_text || item.original_text || "";
+  const resultText =
+    item.result ||
+    item.output_text ||
+    item.translated_text ||
+    item.summary_text ||
+    "";
+
+  router.push({
+    path: "/",
+    query: {
+      mode: isSummary ? "summarize" : "translate",
+      prefill: inputText,
+      result: resultText,
+      targetLang: !isSummary
+        ? item.target_language || item.target_lang
+        : undefined,
+    },
+  });
 };
 
 const goToNextPage = () => {
@@ -357,16 +394,9 @@ onMounted(() => {
 
         <!-- Content Area -->
         <div class="p-6">
-          <!-- Loading State -->
-          <div v-if="isLoading" class="text-center py-12">
-            <div class="inline-block">
-              <div
-                class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-400"
-              ></div>
-            </div>
-            <p class="mt-4 text-gray-600 dark:text-gray-400">
-              Loading history...
-            </p>
+          <!-- Loading State with Skeleton -->
+          <div v-if="isLoading" class="py-4">
+            <SkeletonLoader type="card" :count="3" />
           </div>
 
           <!-- Empty State -->
@@ -442,8 +472,8 @@ onMounted(() => {
 
               <!-- Content -->
               <div class="flex-1 min-w-0">
-                <!-- Type Badge & Date -->
-                <div class="flex items-center gap-2 mb-2">
+                <!-- Header: Type Badge, Language & Date -->
+                <div class="flex flex-wrap items-center gap-2 mb-3">
                   <span
                     :class="[
                       'inline-flex px-3 py-1 rounded-full text-xs font-bold',
@@ -458,55 +488,98 @@ onMounted(() => {
                         : "Translation"
                     }}
                   </span>
-                  <span class="text-xs text-gray-500 dark:text-gray-400">{{
-                    item.displayDate
-                  }}</span>
-                </div>
-
-                <!-- Input Text -->
-                <div v-if="item.input_text || item.original_text" class="mb-2">
-                  <p
-                    class="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1"
+                  <span
+                    v-if="item.target_language || item.target_lang"
+                    class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300"
                   >
-                    Input:
-                  </p>
-                  <p
-                    class="text-sm text-gray-700 dark:text-gray-300 line-clamp-2"
-                  >
-                    {{ item.input_text || item.original_text }}
-                  </p>
-                </div>
-
-                <!-- Target Language (for translations) -->
-                <div
-                  v-if="item.target_language || item.target_lang"
-                  class="mb-2"
-                >
-                  <p
-                    class="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1"
-                  >
-                    Target Language:
-                  </p>
-                  <p class="text-sm text-gray-700 dark:text-gray-300">
+                    <svg
+                      class="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+                      />
+                    </svg>
                     {{ item.target_language || item.target_lang }}
-                  </p>
+                  </span>
+                  <span
+                    class="text-xs text-gray-500 dark:text-gray-400 ml-auto"
+                    >{{ item.displayDate }}</span
+                  >
                 </div>
 
-                <!-- Result/Output Text -->
-                <div
-                  v-if="item.result || item.output_text || item.translated_text"
-                  class="mb-3"
-                >
-                  <p
-                    class="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1"
-                  >
-                    Result:
-                  </p>
+                <!-- Input & Result Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <!-- Input Panel -->
                   <div
-                    class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700"
+                    v-if="item.input_text || item.original_text"
+                    class="bg-gray-100 dark:bg-gray-800 rounded-lg p-3"
                   >
+                    <div class="flex items-center gap-2 mb-2">
+                      <svg
+                        class="w-4 h-4 text-gray-500 dark:text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
+                      </svg>
+                      <span
+                        class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide"
+                        >Input</span
+                      >
+                    </div>
                     <p
-                      class="text-sm text-gray-800 dark:text-gray-200 line-clamp-3"
+                      :class="[
+                        'text-sm text-gray-700 dark:text-gray-300',
+                        isExpanded(item.id) ? '' : 'line-clamp-3',
+                      ]"
+                    >
+                      {{ item.input_text || item.original_text }}
+                    </p>
+                  </div>
+
+                  <!-- Result Panel -->
+                  <div
+                    v-if="
+                      item.result || item.output_text || item.translated_text
+                    "
+                    class="bg-cyan-50 dark:bg-cyan-950/30 rounded-lg p-3 border border-cyan-200 dark:border-cyan-800"
+                  >
+                    <div class="flex items-center gap-2 mb-2">
+                      <svg
+                        class="w-4 h-4 text-cyan-600 dark:text-cyan-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span
+                        class="text-xs font-semibold text-cyan-600 dark:text-cyan-400 uppercase tracking-wide"
+                        >Result</span
+                      >
+                    </div>
+                    <p
+                      :class="[
+                        'text-sm text-gray-800 dark:text-gray-200',
+                        isExpanded(item.id) ? '' : 'line-clamp-3',
+                      ]"
                     >
                       {{
                         item.result || item.output_text || item.translated_text
@@ -515,63 +588,132 @@ onMounted(() => {
                   </div>
                 </div>
 
-                <!-- Copy Button -->
-                <div class="flex items-center gap-4">
-                  <button
-                    @click="
-                      copyToClipboard(
-                        item.result ||
-                          item.output_text ||
-                          item.translated_text ||
-                          ''
-                      )
-                    "
-                    class="text-xs font-medium text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors cursor-pointer"
-                  >
-                    Copy Result
-                  </button>
-
-                  <!-- Save to Favorites Button -->
-                  <button
-                    @click="toggleItemFavorite(item)"
+                <!-- Expand/Collapse Button -->
+                <button
+                  @click="toggleExpand(item.id)"
+                  class="mt-2 flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors cursor-pointer"
+                >
+                  <svg
                     :class="[
-                      'flex items-center gap-1 text-xs font-medium transition-colors cursor-pointer',
-                      isItemFavorited(item)
-                        ? 'text-yellow-500 hover:text-yellow-600'
-                        : 'text-gray-500 hover:text-yellow-500',
+                      'w-4 h-4 transition-transform',
+                      isExpanded(item.id) ? 'rotate-180' : '',
                     ]"
-                    :title="
-                      isItemFavorited(item)
-                        ? 'Remove from favorites'
-                        : 'Save to favorites'
-                    "
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    <svg
-                      class="w-4 h-4"
-                      :fill="isItemFavorited(item) ? 'currentColor' : 'none'"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                      ></path>
-                    </svg>
-                    {{ isItemFavorited(item) ? "Saved" : "Save" }}
-                  </button>
-                </div>
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                  {{ isExpanded(item.id) ? "Show less" : "Show more" }}
+                </button>
               </div>
 
-              <!-- Delete Button -->
-              <div class="flex items-center gap-2 sm:w-auto">
+              <!-- Actions -->
+              <div class="flex sm:flex-col gap-2 sm:ml-4">
+                <!-- Use in Translator -->
+                <button
+                  @click="useInTranslator(item)"
+                  class="p-2 rounded-lg bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-200 dark:hover:bg-cyan-900/50 transition-colors cursor-pointer"
+                  title="Use in translator"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                </button>
+
+                <!-- Copy Result -->
+                <button
+                  @click="
+                    copyToClipboard(
+                      item.result ||
+                        item.output_text ||
+                        item.translated_text ||
+                        ''
+                    )
+                  "
+                  class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+                  title="Copy result"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                    />
+                  </svg>
+                </button>
+
+                <!-- Save to Favorites -->
+                <button
+                  @click="toggleItemFavorite(item)"
+                  :class="[
+                    'p-2 rounded-lg transition-colors cursor-pointer',
+                    isItemFavorited(item)
+                      ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-200 dark:hover:bg-yellow-900/50'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600',
+                  ]"
+                  :title="
+                    isItemFavorited(item)
+                      ? 'Remove from favorites'
+                      : 'Save to favorites'
+                  "
+                >
+                  <svg
+                    class="w-5 h-5"
+                    :fill="isItemFavorited(item) ? 'currentColor' : 'none'"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                    />
+                  </svg>
+                </button>
+
+                <!-- Delete -->
                 <button
                   @click="deleteItem(item.id)"
                   :disabled="isDeleting"
-                  class="px-3 py-1 rounded-lg text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 disabled:opacity-50 transition-colors whitespace-nowrap"
+                  class="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors disabled:opacity-50 cursor-pointer"
+                  title="Delete"
                 >
-                  Delete
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
                 </button>
               </div>
             </div>
