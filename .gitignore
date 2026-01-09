@@ -26,3 +26,7 @@ dist-ssr
 # Environment variables
 .env
 .env.*
+
+# BFG reports (local analysis artifacts)
+.bfg-report/
+..bfg-report/
