@@ -23,6 +23,7 @@ export default {
     history: "History",
     favorites: "Favorites",
     about: "About",
+    contact: "Contact",
     login: "Log in",
     signup: "Sign up",
     logout: "Log out",
@@ -297,5 +298,22 @@ export default {
     english: "English",
     french: "French",
     arabic: "Arabic",
+  },
+
+  // Contact page
+  contact: {
+    title: "Contact Us",
+    subtitle: "Have a question or feedback? We'd love to hear from you.",
+    nameLabel: "Name",
+    namePlaceholder: "Your name",
+    emailLabel: "Email",
+    emailPlaceholder: "your.email@example.com",
+    messageLabel: "Message",
+    messagePlaceholder: "How can we help you?",
+    sendButton: "Send Message",
+    sending: "Sending...",
+    successMessage: "Message sent successfully! We'll get back to you soon.",
+    errorMessage: "Something went wrong. Please try again.",
+    responseTime: "We typically respond within 24-48 hours.",
   },
 };

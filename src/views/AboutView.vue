@@ -9,14 +9,14 @@ const team = [
   {
     name: "Abdellah Khouden",
     roleKey: "coFounderDeveloper",
-    image: "/img/us/abdellah.jpg",
+    image: "/img/us/abdellah.webp",
     github: "https://github.com/khouden",
     linkedin: "https://www.linkedin.com/in/abdellah-khouden/",
   },
   {
     name: "Noureddine Laktab",
     roleKey: "coFounderDeveloper",
-    image: "/img/us/noureddine.jpeg",
+    image: "/img/us/noureddine.webp",
     github: "https://github.com/Laktab-Noureddine-code",
     linkedin: "https://www.linkedin.com/in/noureddine-laktab",
   },
@@ -46,8 +46,8 @@ const values = computed(() => [
 ]);
 
 const stats = computed(() => [
-  { value: "10K+", labelKey: "translationsCompleted" },
-  { value: "50+", labelKey: "languagesSupported" },
+  { value: "1K+", labelKey: "translationsCompleted" },
+  { value: "30+", labelKey: "languagesSupported" },
   { value: "99.9%", labelKey: "uptimeGuarantee" },
   { value: "< 2s", labelKey: "averageResponseTime" },
 ]);
@@ -346,8 +346,8 @@ const stats = computed(() => [
           <div
             class="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <a
-              href="mailto:contact@3ssila-ai.com"
+            <RouterLink
+              to="/contact"
               class="inline-flex items-center gap-2 bg-white text-cyan-600 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-gray-100 transition-colors"
             >
               <svg
@@ -364,7 +364,7 @@ const stats = computed(() => [
                 />
               </svg>
               {{ t.about.contactUs }}
-            </a>
+            </RouterLink>
             <RouterLink
               to="/"
               class="inline-flex items-center gap-2 bg-cyan-700/50 text-white font-bold py-3 px-8 rounded-full hover:bg-cyan-700/70 transition-colors border border-white/20"

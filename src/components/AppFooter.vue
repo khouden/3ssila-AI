@@ -81,7 +81,7 @@ onMounted(() => {
           <div class="lg:col-span-1">
             <div class="flex items-center gap-2 mb-5">
               <img
-                :src="isDark ? '/img/logo/logo_dark.png' : '/img/logo/logo.png'"
+                :src="isDark ? '/img/logo/logo_dark.webp' : '/img/logo/logo.webp'"
                 alt="3ssila AI"
                 class="w-8 h-8 object-contain"
               />
@@ -245,20 +245,12 @@ onMounted(() => {
                 </RouterLink>
               </li>
               <li>
-                <a
-                  href="#"
-                  class="text-sm text-gray-600 dark:text-gray-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors duration-200"
-                >
-                  Blog
-                </a>
-              </li>
-              <li>
-                <a
-                  href="mailto:contact@3ssila-ai.com"
+                <RouterLink
+                  to="/contact"
                   class="text-sm text-gray-600 dark:text-gray-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors duration-200"
                 >
                   {{ t.footer.contact }}
-                </a>
+                </RouterLink>
               </li>
             </ul>
           </div>

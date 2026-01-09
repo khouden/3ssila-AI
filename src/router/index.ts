@@ -11,6 +11,7 @@ import FavoritesView from "../views/FavoritesView.vue";
 import AboutView from "../views/AboutView.vue";
 import PrivacyPolicyView from "../views/PrivacyPolicyView.vue";
 import TermsOfServiceView from "../views/TermsOfServiceView.vue";
+import ContactView from "../views/ContactView.vue";
 import { auth } from "../stores/auth";
 
 const routes: RouteRecordRaw[] = [
@@ -53,6 +54,11 @@ const routes: RouteRecordRaw[] = [
     path: "/favorites",
     name: "favorites",
     component: FavoritesView as any,
+  },
+  {
+    path: "/contact",
+    name: "contact",
+    component: ContactView as any,
   },
 ];
 

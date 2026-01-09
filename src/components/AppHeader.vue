@@ -107,7 +107,7 @@ onBeforeUnmount(() => {
           @click="goHome"
         >
           <img
-            :src="isDark ? '/img/logo/logo_dark.png' : '/img/logo/logo.png'"
+            :src="isDark ? '/img/logo/logo_dark.webp' : '/img/logo/logo.webp'"
             alt="3ssila AI"
             class="w-9 h-9 object-contain transition-transform group-hover:scale-105"
           />
@@ -163,6 +163,15 @@ onBeforeUnmount(() => {
             active-class="!text-cyan-500 dark:!text-cyan-400"
           >
             {{ t.nav.about }}
+          </RouterLink>
+
+          <!-- Contact -->
+          <RouterLink
+            to="/contact"
+            class="relative px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 rounded-lg transition-all duration-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
+            active-class="!text-cyan-500 dark:!text-cyan-400"
+          >
+            {{ t.nav.contact }}
           </RouterLink>
         </nav>
 
@@ -544,6 +553,28 @@ onBeforeUnmount(() => {
                 />
               </svg>
               {{ t.nav.about }}
+            </RouterLink>
+
+            <RouterLink
+              to="/contact"
+              @click="closeMobileMenu"
+              class="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              active-class="!bg-cyan-50 dark:!bg-cyan-900/20 !text-cyan-600 dark:!text-cyan-400"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+              {{ t.nav.contact }}
             </RouterLink>
           </nav>
 

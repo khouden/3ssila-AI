@@ -350,10 +350,10 @@ onMounted(() => {
                 <button
                   @click="handleTabChange('all')"
                   :class="[
-                    'px-4 py-2 rounded-lg font-medium transition-all duration-200',
+                    'px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer',
                     activeTab === 'all'
                       ? 'bg-cyan-400 text-black shadow-md'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 cursor-pointer',
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600',
                   ]"
                 >
                   {{ t.history.all }}
@@ -361,10 +361,10 @@ onMounted(() => {
                 <button
                   @click="handleTabChange('summaries')"
                   :class="[
-                    'px-4 py-2 rounded-lg font-medium transition-all duration-200',
+                    'px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer',
                     activeTab === 'summaries'
                       ? 'bg-cyan-400 text-black shadow-md'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 cursor-pointer',
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600',
                   ]"
                 >
                   {{ t.history.summaries }}
@@ -372,10 +372,10 @@ onMounted(() => {
                 <button
                   @click="handleTabChange('translations')"
                   :class="[
-                    'px-4 py-2 rounded-lg font-medium transition-all duration-200',
+                    'px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer',
                     activeTab === 'translations'
                       ? 'bg-cyan-400 text-black shadow-md'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 cursor-pointer',
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600',
                   ]"
                 >
                   {{ t.history.translations }}
@@ -387,7 +387,7 @@ onMounted(() => {
                 v-if="selectedCount > 0"
                 @click="deleteSelected"
                 :disabled="isDeleting"
-                class="px-4 py-2 rounded-lg font-medium bg-red-500/20 text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700 hover:bg-red-500/30 disabled:opacity-50 transition-all duration-200"
+                class="px-4 py-2 rounded-lg font-medium bg-red-500/20 text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700 hover:bg-red-500/30 disabled:opacity-50 transition-all duration-200 cursor-pointer"
               >
                 {{ t.history.deleteSelected }} ({{ selectedCount }})
               </button>
@@ -741,7 +741,7 @@ onMounted(() => {
                 :key="page"
                 @click="goToPage(page)"
                 :class="[
-                  'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                  'px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer',
                   currentPage === page
                     ? 'bg-cyan-400 text-black font-bold'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600',
@@ -754,7 +754,7 @@ onMounted(() => {
             <button
               @click="goToNextPage"
               :disabled="currentPage === totalPages"
-              class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               {{ t.history.next }} →
             </button>

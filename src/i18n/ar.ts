@@ -23,6 +23,7 @@ export default {
     history: "السجل",
     favorites: "المفضلة",
     about: "حول",
+    contact: "اتصل بنا",
     login: "تسجيل الدخول",
     signup: "إنشاء حساب",
     logout: "تسجيل الخروج",
@@ -289,5 +290,22 @@ export default {
     english: "الإنجليزية",
     french: "الفرنسية",
     arabic: "العربية",
+  },
+
+  // Contact page
+  contact: {
+    title: "اتصل بنا",
+    subtitle: "هل لديك سؤال أو ملاحظات؟ نحب أن نسمع منك.",
+    nameLabel: "الاسم",
+    namePlaceholder: "اسمك",
+    emailLabel: "البريد الإلكتروني",
+    emailPlaceholder: "your.email@example.com",
+    messageLabel: "الرسالة",
+    messagePlaceholder: "كيف يمكننا مساعدتك؟",
+    sendButton: "إرسال الرسالة",
+    sending: "جاري الإرسال...",
+    successMessage: "تم إرسال الرسالة بنجاح! سنرد عليك قريباً.",
+    errorMessage: "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    responseTime: "نرد عادةً خلال 24-48 ساعة.",
   },
 };
