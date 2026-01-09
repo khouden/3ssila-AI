@@ -104,6 +104,13 @@ export default {
     invalidFileType:
       "Invalid file type. Please upload PDF, DOCX, PNG, or JPEG.",
     failedExtract: "Failed to extract text from file.",
+
+    // Login required messages
+    loginRequired: "Login Required",
+    loginForSpeechToText: "Please log in to use speech-to-text feature.",
+    loginForTextToSpeech: "Please log in to use text-to-speech feature.",
+    loginForFavorites: "Please log in to save favorites.",
+    loginForFileUpload: "Please log in to upload files.",
   },
 
   // History Page

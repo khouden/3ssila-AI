@@ -105,6 +105,16 @@ export default {
     invalidFileType:
       "Type de fichier invalide. Veuillez télécharger un PDF, DOCX, PNG ou JPEG.",
     failedExtract: "Échec de l'extraction du texte du fichier.",
+
+    // Login required messages
+    loginRequired: "Connexion requise",
+    loginForSpeechToText:
+      "Veuillez vous connecter pour utiliser la reconnaissance vocale.",
+    loginForTextToSpeech:
+      "Veuillez vous connecter pour utiliser la synthèse vocale.",
+    loginForFavorites: "Veuillez vous connecter pour enregistrer les favoris.",
+    loginForFileUpload:
+      "Veuillez vous connecter pour télécharger des fichiers.",
   },
 
   // History Page

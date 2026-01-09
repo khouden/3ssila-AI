@@ -102,6 +102,15 @@ export default {
     fileTooLarge: "حجم الملف يتجاوز الحد المسموح (1 ميجابايت)",
     invalidFileType: "نوع ملف غير صالح. الرجاء رفع PDF أو DOCX أو PNG أو JPEG.",
     failedExtract: "فشل استخراج النص من الملف.",
+
+    // Login required messages
+    loginRequired: "يجب تسجيل الدخول",
+    loginForSpeechToText:
+      "الرجاء تسجيل الدخول لاستخدام ميزة تحويل الصوت إلى نص.",
+    loginForTextToSpeech:
+      "الرجاء تسجيل الدخول لاستخدام ميزة تحويل النص إلى صوت.",
+    loginForFavorites: "الرجاء تسجيل الدخول لحفظ المفضلة.",
+    loginForFileUpload: "الرجاء تسجيل الدخول لرفع الملفات.",
   },
 
   // History Page

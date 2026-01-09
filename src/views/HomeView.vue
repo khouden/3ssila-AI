@@ -390,6 +390,10 @@ const isCurrentFavorited = computed(() => {
 
 // Toggle favorite for current result
 const toggleFavorite = () => {
+  if (!auth.isAuthenticated()) {
+    toast.warning(t.value.home.loginForFavorites);
+    return;
+  }
   if (!inputText.value || !resultText.value) return;
 
   const isFav = favorites.toggle({
@@ -420,6 +424,10 @@ const goToSignup = () => {
 };
 
 const triggerFileUpload = () => {
+  if (!auth.isAuthenticated()) {
+    toast.warning(t.value.home.loginForFileUpload);
+    return;
+  }
   fileInput.value?.click();
 };
 
@@ -476,6 +484,10 @@ const handleDragLeave = (event: DragEvent) => {
 const handleDrop = async (event: DragEvent) => {
   event.preventDefault();
   isDragging.value = false;
+  if (!auth.isAuthenticated()) {
+    toast.warning(t.value.home.loginForFileUpload);
+    return;
+  }
   const file = event.dataTransfer?.files?.[0];
   if (file) {
     await processFile(file);
@@ -484,6 +496,10 @@ const handleDrop = async (event: DragEvent) => {
 
 // Mic modal handlers
 const openMicModal = () => {
+  if (!auth.isAuthenticated()) {
+    toast.warning(t.value.home.loginForSpeechToText);
+    return;
+  }
   speechLanguageSelection.value = targetLanguage.value;
   showMicModal.value = true;
 };
@@ -623,6 +639,12 @@ const readResult = () => {
     isSpeaking.value = false;
     isPlaying.value = false;
     toast.info("Audio stopped");
+    return;
+  }
+
+  // Check if user is authenticated
+  if (!auth.isAuthenticated()) {
+    toast.warning(t.value.home.loginForTextToSpeech);
     return;
   }
 
