@@ -2,7 +2,6 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { favorites, type FavoriteItem } from "../stores/favorites";
-import { auth } from "../stores/auth";
 import { toast } from "../stores/toast";
 import { confirm } from "../stores/confirm";
 import { useI18n } from "../composables/useI18n";
@@ -168,7 +167,7 @@ const deleteSelected = async () => {
 
 const copyToClipboard = (text: string) => {
   // Strip HTML tags for plain text copy
-  const tmp = document.createElement('div');
+  const tmp = document.createElement("div");
   tmp.innerHTML = text;
   navigator.clipboard.writeText(tmp.textContent || text);
   toast.success("Copied to clipboard!");

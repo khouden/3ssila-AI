@@ -197,7 +197,6 @@ const deleteItem = async (itemId: string) => {
 
 const deleteAll = async () => {
   const isSummaries = activeTab.value === "summaries";
-  const typeLabel = isSummaries ? "summaries" : "translations";
 
   const confirmed = await confirm.show({
     title: t.value.history.deleteAll,
@@ -262,7 +261,7 @@ const deleteSelected = async () => {
 
 const copyToClipboard = (text: string) => {
   // Strip HTML tags for plain text copy
-  const tmp = document.createElement('div');
+  const tmp = document.createElement("div");
   tmp.innerHTML = text;
   navigator.clipboard.writeText(tmp.textContent || text);
   toast.success("Copied to clipboard!");
@@ -615,7 +614,9 @@ onMounted(() => {
                         'text-sm text-gray-800 dark:text-gray-200 tiptap-content',
                         isExpanded(item.id) ? '' : 'line-clamp-3',
                       ]"
-                      v-html="item.result || item.output_text || item.translated_text"
+                      v-html="
+                        item.result || item.output_text || item.translated_text
+                      "
                     ></div>
                   </div>
                 </div>
