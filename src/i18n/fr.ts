@@ -30,6 +30,7 @@ export default {
     profile: "Profil",
     getStarted: "Commencer",
     getStartedFree: "Commencer — C'est gratuit",
+    youtube: "YouTube",
   },
 
   // Theme
@@ -356,6 +357,26 @@ export default {
     english: "Anglais",
     french: "Français",
     arabic: "Arabe",
+  },
+
+  // YouTube converter page
+  youtube: {
+    title: "YouTube en Texte",
+    subtitle:
+      "Convertissez n'importe quelle vidéo YouTube en texte en extrayant sa transcription.",
+    urlLabel: "URL de la vidéo YouTube",
+    urlPlaceholder: "https://www.youtube.com/watch?v=...",
+    convertButton: "Extraire la transcription",
+    converting: "Extraction de la transcription...",
+    clear: "Effacer",
+    resultTitle: "Transcription",
+    invalidUrl:
+      "Impossible d'extraire l'identifiant de la vidéo à partir de l'URL.",
+    noTranscript: "Aucune transcription disponible pour cette vidéo.",
+    rateLimited: "Trop de requêtes. Veuillez réessayer plus tard.",
+    fetchError:
+      "Échec de la récupération de la transcription. Veuillez réessayer.",
+    note: "Les transcriptions sont extraites des sous-titres auto-générés ou manuels de YouTube.",
   },
 
   // Contact page

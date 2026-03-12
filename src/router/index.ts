@@ -15,6 +15,7 @@ import ContactView from "../views/ContactView.vue";
 import ForgotPasswordView from "../views/ForgotPasswordView.vue";
 import ResetPasswordView from "../views/ResetPasswordView.vue";
 import ProfileView from "../views/ProfileView.vue";
+import YoutubeConverterView from "../views/YoutubeConverterView.vue";
 import AdminLayout from "../views/admin/AdminLayout.vue";
 import AdminDashboard from "../views/admin/AdminDashboard.vue";
 import AdminUsers from "../views/admin/AdminUsers.vue";
@@ -82,6 +83,11 @@ const routes: RouteRecordRaw[] = [
     path: "/profile",
     name: "profile",
     component: ProfileView as any,
+  },
+  {
+    path: "/youtube",
+    name: "youtube",
+    component: YoutubeConverterView as any,
   },
   {
     path: "/admin",

@@ -30,6 +30,7 @@ export default {
     profile: "الملف الشخصي",
     getStarted: "ابدأ الآن",
     getStartedFree: "ابدأ الآن — مجاناً",
+    youtube: "يوتيوب",
   },
 
   // Theme
@@ -344,6 +345,23 @@ export default {
     english: "الإنجليزية",
     french: "الفرنسية",
     arabic: "العربية",
+  },
+
+  // YouTube converter page
+  youtube: {
+    title: "يوتيوب إلى نص",
+    subtitle: "حوّل أي فيديو يوتيوب إلى نص عن طريق استخراج النص المكتوب.",
+    urlLabel: "رابط فيديو يوتيوب",
+    urlPlaceholder: "https://www.youtube.com/watch?v=...",
+    convertButton: "استخراج النص",
+    converting: "جاري استخراج النص...",
+    clear: "مسح",
+    resultTitle: "النص المستخرج",
+    invalidUrl: "تعذر استخراج معرف الفيديو من الرابط.",
+    noTranscript: "لا يوجد نص متاح لهذا الفيديو.",
+    rateLimited: "طلبات كثيرة جداً. يرجى المحاولة لاحقاً.",
+    fetchError: "فشل في جلب النص. يرجى المحاولة مرة أخرى.",
+    note: "يتم استخراج النصوص من الترجمات التلقائية أو اليدوية على يوتيوب.",
   },
 
   // Contact page

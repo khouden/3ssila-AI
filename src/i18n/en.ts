@@ -30,6 +30,7 @@ export default {
     profile: "Profile",
     getStarted: "Get Started",
     getStartedFree: "Get Started — It's Free",
+    youtube: "YouTube",
   },
 
   // Theme
@@ -349,6 +350,24 @@ export default {
     english: "English",
     french: "French",
     arabic: "Arabic",
+  },
+
+  // YouTube converter page
+  youtube: {
+    title: "YouTube to Text",
+    subtitle:
+      "Convert any YouTube video into text by extracting its transcript.",
+    urlLabel: "YouTube Video URL",
+    urlPlaceholder: "https://www.youtube.com/watch?v=...",
+    convertButton: "Extract Transcript",
+    converting: "Extracting transcript...",
+    clear: "Clear",
+    resultTitle: "Transcript",
+    invalidUrl: "Could not extract video ID from URL.",
+    noTranscript: "No transcript available for this video.",
+    rateLimited: "Too many requests. Please try again later.",
+    fetchError: "Failed to fetch transcript. Please try again.",
+    note: "Transcripts are extracted from YouTube's auto-generated or manual captions.",
   },
 
   // Contact page

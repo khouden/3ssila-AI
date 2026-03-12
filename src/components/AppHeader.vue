@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   User,
+  Youtube,
 } from "lucide-vue-next";
 
 const { t } = useI18n();
@@ -165,6 +166,16 @@ onBeforeUnmount(() => {
           >
             <Star class="w-4 h-4" />
             {{ t.nav.favorites }}
+          </RouterLink>
+
+          <!-- YouTube -->
+          <RouterLink
+            to="/youtube"
+            class="relative px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 rounded-lg transition-all duration-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-1"
+            active-class="!text-red-500 dark:!text-red-400"
+          >
+            <Youtube class="w-4 h-4" />
+            {{ t.nav.youtube }}
           </RouterLink>
 
           <!-- About -->
@@ -419,6 +430,16 @@ onBeforeUnmount(() => {
             >
               <Star class="w-5 h-5" />
               {{ t.nav.favorites }}
+            </RouterLink>
+
+            <RouterLink
+              to="/youtube"
+              @click="closeMobileMenu"
+              class="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              active-class="!bg-red-50 dark:!bg-red-900/20 !text-red-600 dark:!text-red-400"
+            >
+              <Youtube class="w-5 h-5" />
+              {{ t.nav.youtube }}
             </RouterLink>
 
             <RouterLink
