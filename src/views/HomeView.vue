@@ -776,7 +776,7 @@ const handleExport = async (format: ExportFormat) => {
 
     <div class="max-w-6xl mx-auto px-4 pb-20">
       <div
-        class="bg-white dark:bg-[#1a1a1a] rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col max-w-full overflow-hidden transition-all duration-300"
+        class="bg-white dark:bg-[#1a1a1a] rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col max-w-full overflow-visible transition-all duration-300"
         :class="isContentLarge ? '' : 'h-[600px]'"
       >
         <div
