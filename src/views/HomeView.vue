@@ -79,7 +79,9 @@ const inputPlainText = ref("");
 const resultText = ref("");
 const mode = ref<"translate" | "summarize">("translate");
 const targetLanguage = ref("French");
+const sourceLanguage = ref("Auto Detect");
 const isLanguageDropdownOpen = ref(false);
+const isSourceLanguageDropdownOpen = ref(false);
 const isLoading = ref(false);
 const isExtracting = ref(false);
 const isDragging = ref(false);
@@ -144,7 +146,9 @@ const speechLanguageSelection = ref("French");
 const isSpeechLangDropdownOpen = ref(false);
 const speechLangSearch = ref("");
 const targetLangSearch = ref("");
+const sourceLangSearch = ref("");
 const targetLangDropdownRef = ref<HTMLElement | null>(null);
+const sourceLangDropdownRef = ref<HTMLElement | null>(null);
 const speechLangDropdownRef = ref<HTMLElement | null>(null);
 
 // Export dropdown state
@@ -209,6 +213,13 @@ const handleClickOutside = (event: MouseEvent) => {
     targetLangSearch.value = "";
   }
   if (
+    sourceLangDropdownRef.value &&
+    !sourceLangDropdownRef.value.contains(target)
+  ) {
+    isSourceLanguageDropdownOpen.value = false;
+    sourceLangSearch.value = "";
+  }
+  if (
     speechLangDropdownRef.value &&
     !speechLangDropdownRef.value.contains(target)
   ) {
@@ -263,6 +274,18 @@ const filteredLanguages = computed(() => {
   const query = targetLangSearch.value.toLowerCase().trim();
   if (!query) return languages;
   return languages.filter((lang) => lang.name.toLowerCase().includes(query));
+});
+
+const filteredSourceLanguages = computed(() => {
+  const query = sourceLangSearch.value.toLowerCase().trim();
+  const allOptions = [{ name: "Auto Detect", code: "auto" }, ...languages];
+  if (!query) return allOptions;
+  return allOptions.filter((lang) => lang.name.toLowerCase().includes(query));
+});
+
+const selectedSourceLanguage = computed(() => {
+  if (sourceLanguage.value === "Auto Detect") return { name: "Auto Detect", code: "auto" };
+  return languages.find((lang) => lang.name === sourceLanguage.value) || { name: "Auto Detect", code: "auto" };
 });
 
 const filteredSpeechLanguages = computed(() => {
@@ -391,7 +414,7 @@ const handleSubmit = async () => {
   try {
     let response;
     if (mode.value === "translate") {
-      response = await api.translateText(inputText.value, targetLanguage.value);
+      response = await api.translateText(inputText.value, targetLanguage.value, sourceLanguage.value === "Auto Detect" ? undefined : sourceLanguage.value);
     } else {
       response = await api.summarizeText(inputText.value);
     }
@@ -836,62 +859,130 @@ const handleExport = async (format: ExportFormat) => {
             </div>
           </div>
 
-          <div v-if="mode === 'translate'" class="flex items-center gap-2">
-            <label class="text-sm text-gray-500 dark:text-gray-400 font-medium"
-              >{{ t.home.targetLanguage }}:</label
-            >
-            <div class="relative" ref="targetLangDropdownRef">
-              <button
-                @click.stop="isLanguageDropdownOpen = !isLanguageDropdownOpen"
-                class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-1.5 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 cursor-pointer"
+          <div v-if="mode === 'translate'" class="flex items-center gap-4 flex-wrap">
+            <!-- Source Language -->
+            <div class="flex items-center gap-2">
+              <label class="text-sm text-gray-500 dark:text-gray-400 font-medium"
+                >{{ t.home.sourceLanguage }}:</label
               >
-                <span :class="`fi fi-${selectedLanguage?.code}`"></span>
-                <span>{{ selectedLanguage?.name }}</span>
-              </button>
-              <div
-                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500"
-              >
-                <ChevronDown class="fill-current h-4 w-4" />
-              </div>
-              <!-- Dropdown -->
-              <div
-                v-if="isLanguageDropdownOpen"
-                @click.stop
-                class="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 overflow-hidden"
-              >
-                <!-- Search input -->
-                <div class="p-2 border-b border-gray-200 dark:border-gray-700">
-                  <input
-                    v-model="targetLangSearch"
-                    type="text"
-                    :placeholder="t.home.searchLanguages"
-                    class="w-full px-3 py-1.5 text-sm rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                  />
+              <div class="relative" ref="sourceLangDropdownRef">
+                <button
+                  @click.stop="isSourceLanguageDropdownOpen = !isSourceLanguageDropdownOpen"
+                  class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-1.5 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 cursor-pointer"
+                >
+                  <span v-if="selectedSourceLanguage.code !== 'auto'" :class="`fi fi-${selectedSourceLanguage.code}`"></span>
+                  <span v-else class="text-gray-400">🌐</span>
+                  <span>{{ selectedSourceLanguage.name === 'Auto Detect' ? t.home.autoDetect : selectedSourceLanguage.name }}</span>
+                </button>
+                <div
+                  class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500"
+                >
+                  <ChevronDown class="fill-current h-4 w-4" />
                 </div>
-                <!-- Language list -->
-                <div class="max-h-48 overflow-y-auto">
-                  <button
-                    v-for="lang in filteredLanguages"
-                    :key="lang.code"
-                    @mousedown.prevent="
-                      targetLanguage = lang.name;
-                      isLanguageDropdownOpen = false;
-                      targetLangSearch = '';
-                    "
-                    class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                    :class="{
-                      'bg-cyan-50 dark:bg-cyan-900/30':
-                        targetLanguage === lang.name,
-                    }"
-                  >
-                    <span :class="`fi fi-${lang.code}`"></span>
-                    <span>{{ lang.name }}</span>
-                  </button>
-                  <div
-                    v-if="filteredLanguages.length === 0"
-                    class="px-3 py-2 text-sm text-gray-400 italic"
-                  >
-                    {{ t.common.noResults }}
+                <!-- Dropdown -->
+                <div
+                  v-if="isSourceLanguageDropdownOpen"
+                  @click.stop
+                  class="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 overflow-hidden"
+                >
+                  <!-- Search input -->
+                  <div class="p-2 border-b border-gray-200 dark:border-gray-700">
+                    <input
+                      v-model="sourceLangSearch"
+                      type="text"
+                      :placeholder="t.home.searchLanguages"
+                      class="w-full px-3 py-1.5 text-sm rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                    />
+                  </div>
+                  <!-- Language list -->
+                  <div class="max-h-48 overflow-y-auto">
+                    <button
+                      v-for="lang in filteredSourceLanguages"
+                      :key="lang.code"
+                      @mousedown.prevent="
+                        sourceLanguage = lang.name;
+                        isSourceLanguageDropdownOpen = false;
+                        sourceLangSearch = '';
+                      "
+                      class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                      :class="{
+                        'bg-cyan-50 dark:bg-cyan-900/30':
+                          sourceLanguage === lang.name,
+                      }"
+                    >
+                      <span v-if="lang.code !== 'auto'" :class="`fi fi-${lang.code}`"></span>
+                      <span v-else class="text-gray-400">🌐</span>
+                      <span>{{ lang.name === 'Auto Detect' ? t.home.autoDetect : lang.name }}</span>
+                    </button>
+                    <div
+                      v-if="filteredSourceLanguages.length === 0"
+                      class="px-3 py-2 text-sm text-gray-400 italic"
+                    >
+                      {{ t.common.noResults }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Target Language -->
+            <div class="flex items-center gap-2">
+              <label class="text-sm text-gray-500 dark:text-gray-400 font-medium"
+                >{{ t.home.targetLanguage }}:</label
+              >
+              <div class="relative" ref="targetLangDropdownRef">
+                <button
+                  @click.stop="isLanguageDropdownOpen = !isLanguageDropdownOpen"
+                  class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-1.5 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 cursor-pointer"
+                >
+                  <span :class="`fi fi-${selectedLanguage?.code}`"></span>
+                  <span>{{ selectedLanguage?.name }}</span>
+                </button>
+                <div
+                  class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500"
+                >
+                  <ChevronDown class="fill-current h-4 w-4" />
+                </div>
+                <!-- Dropdown -->
+                <div
+                  v-if="isLanguageDropdownOpen"
+                  @click.stop
+                  class="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 overflow-hidden"
+                >
+                  <!-- Search input -->
+                  <div class="p-2 border-b border-gray-200 dark:border-gray-700">
+                    <input
+                      v-model="targetLangSearch"
+                      type="text"
+                      :placeholder="t.home.searchLanguages"
+                      class="w-full px-3 py-1.5 text-sm rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                    />
+                  </div>
+                  <!-- Language list -->
+                  <div class="max-h-48 overflow-y-auto">
+                    <button
+                      v-for="lang in filteredLanguages"
+                      :key="lang.code"
+                      @mousedown.prevent="
+                        targetLanguage = lang.name;
+                        isLanguageDropdownOpen = false;
+                        targetLangSearch = '';
+                      "
+                      class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                      :class="{
+                        'bg-cyan-50 dark:bg-cyan-900/30':
+                          targetLanguage === lang.name,
+                      }"
+                    >
+                      <span :class="`fi fi-${lang.code}`"></span>
+                      <span>{{ lang.name }}</span>
+                    </button>
+                    <div
+                      v-if="filteredLanguages.length === 0"
+                      class="px-3 py-2 text-sm text-gray-400 italic"
+                    >
+                      {{ t.common.noResults }}
+                    </div>
                   </div>
                 </div>
               </div>

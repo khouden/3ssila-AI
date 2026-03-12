@@ -52,6 +52,10 @@ export default {
     characters: "حرف",
     characterLimit: "الحد الأقصى للأحرف",
 
+    // Source language
+    sourceLanguage: "لغة المصدر",
+    autoDetect: "كشف تلقائي",
+
     // Target language
     targetLanguage: "اللغة الهدف",
     selectLanguage: "اختر اللغة",

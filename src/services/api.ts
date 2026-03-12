@@ -39,11 +39,19 @@ apiClient.interceptors.response.use(
 
 export default {
   // AI Services
-  translateText(text: string, targetLang: string = "French") {
-    return apiClient.post("/tools/translate", {
+  translateText(
+    text: string,
+    targetLang: string = "French",
+    sourceLang?: string,
+  ) {
+    const payload: Record<string, string> = {
       text,
       target_lang: targetLang,
-    });
+    };
+    if (sourceLang) {
+      payload.source_lang = sourceLang;
+    }
+    return apiClient.post("/tools/translate", payload);
   },
 
   summarizeText(text: string) {

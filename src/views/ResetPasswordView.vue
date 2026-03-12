@@ -4,6 +4,7 @@ import { useRouter, useRoute } from "vue-router";
 import api from "../services/api";
 import { toast } from "../stores/toast";
 import { useI18n } from "../composables/useI18n";
+import { Eye, EyeOff } from "lucide-vue-next";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -14,6 +15,8 @@ const code = ref("");
 const newPassword = ref("");
 const confirmPassword = ref("");
 const isLoading = ref(false);
+const showNewPassword = ref(false);
+const showConfirmPassword = ref(false);
 
 onMounted(() => {
   email.value = (route.query.email as string) || "";
@@ -105,13 +108,19 @@ const handleResetPassword = async () => {
           >
             {{ t.auth.newPassword }}
           </label>
-          <input
-            id="newPassword"
-            v-model="newPassword"
-            type="password"
-            :placeholder="t.auth.newPasswordPlaceholder"
-            class="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
-          />
+          <div class="relative">
+            <input
+              id="newPassword"
+              v-model="newPassword"
+              :type="showNewPassword ? 'text' : 'password'"
+              :placeholder="t.auth.newPasswordPlaceholder"
+              class="appearance-none block w-full px-4 py-3 pr-10 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
+            />
+            <button type="button" @click="showNewPassword = !showNewPassword" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer">
+              <EyeOff v-if="showNewPassword" class="w-4 h-4" />
+              <Eye v-else class="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         <!-- Confirm Password -->
@@ -122,13 +131,19 @@ const handleResetPassword = async () => {
           >
             {{ t.auth.confirmNewPassword }}
           </label>
-          <input
-            id="confirmPassword"
-            v-model="confirmPassword"
-            type="password"
-            :placeholder="t.auth.confirmNewPasswordPlaceholder"
-            class="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
-          />
+          <div class="relative">
+            <input
+              id="confirmPassword"
+              v-model="confirmPassword"
+              :type="showConfirmPassword ? 'text' : 'password'"
+              :placeholder="t.auth.confirmNewPasswordPlaceholder"
+              class="appearance-none block w-full px-4 py-3 pr-10 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
+            />
+            <button type="button" @click="showConfirmPassword = !showConfirmPassword" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer">
+              <EyeOff v-if="showConfirmPassword" class="w-4 h-4" />
+              <Eye v-else class="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         <div class="space-y-4 pt-2">

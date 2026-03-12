@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import api from "../services/api";
 import { toast } from "../stores/toast";
 import { useI18n } from "../composables/useI18n";
+import { Eye, EyeOff } from "lucide-vue-next";
 
 const { t } = useI18n();
 
@@ -13,6 +14,7 @@ const router = useRouter();
 const name = ref("");
 const email = ref("");
 const password = ref("");
+const showPassword = ref(false);
 
 const handleSignup = async () => {
   if (!email.value || !password.value || !name.value) {
@@ -94,14 +96,20 @@ const handleSignup = async () => {
           >
             {{ t.auth.password }}
           </label>
-          <input
-            id="password"
-            v-model="password"
-            type="password"
-            :placeholder="t.auth.createPassword"
-            required
-            class="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
-          />
+          <div class="relative">
+            <input
+              id="password"
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'"
+              :placeholder="t.auth.createPassword"
+              required
+              class="appearance-none block w-full px-4 py-3 pr-10 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
+            />
+            <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer">
+              <EyeOff v-if="showPassword" class="w-4 h-4" />
+              <Eye v-else class="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         <div class="space-y-4 pt-2">

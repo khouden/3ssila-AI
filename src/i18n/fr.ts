@@ -52,6 +52,10 @@ export default {
     characters: "caractères",
     characterLimit: "Limite de caractères",
 
+    // Source language
+    sourceLanguage: "Langue source",
+    autoDetect: "Détection automatique",
+
     // Target language
     targetLanguage: "Langue cible",
     selectLanguage: "Sélectionner la langue",
