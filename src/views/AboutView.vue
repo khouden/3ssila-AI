@@ -12,9 +12,69 @@ import {
   Linkedin,
   Mail,
   ArrowRight,
+  Mic,
+  FileText,
+  Download,
+  Star,
+  History,
+  Youtube,
+  CloudUpload,
 } from "lucide-vue-next";
 
 const { t } = useI18n();
+
+const features = computed(() => [
+  {
+    icon: "translate",
+    titleKey: "translateFeature",
+    descKey: "translateFeatureDesc",
+  },
+  {
+    icon: "summarize",
+    titleKey: "summarizeFeature",
+    descKey: "summarizeFeatureDesc",
+  },
+  {
+    icon: "grammar",
+    titleKey: "grammarFeature",
+    descKey: "grammarFeatureDesc",
+  },
+  {
+    icon: "youtube",
+    titleKey: "youtubeFeature",
+    descKey: "youtubeFeatureDesc",
+  },
+  {
+    icon: "voice",
+    titleKey: "voiceFeature",
+    descKey: "voiceFeatureDesc",
+  },
+  {
+    icon: "speechToText",
+    titleKey: "speechToTextFeature",
+    descKey: "speechToTextFeatureDesc",
+  },
+  {
+    icon: "fileUpload",
+    titleKey: "fileUploadFeature",
+    descKey: "fileUploadFeatureDesc",
+  },
+  {
+    icon: "export",
+    titleKey: "exportFeature",
+    descKey: "exportFeatureDesc",
+  },
+  {
+    icon: "favorites",
+    titleKey: "favoritesFeature",
+    descKey: "favoritesFeatureDesc",
+  },
+  {
+    icon: "history",
+    titleKey: "historyFeature",
+    descKey: "historyFeatureDesc",
+  },
+]);
 
 const team = [
   {
@@ -132,6 +192,79 @@ const stats = computed(() => [
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-16 px-4">
+      <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-12">
+          <h2
+            class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4"
+          >
+            {{ t.about.features }}
+          </h2>
+          <p class="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
+            {{ t.about.subtitle }}
+          </p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+          <div
+            v-for="feature in features"
+            :key="feature.titleKey"
+            class="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 border border-gray-200 dark:border-gray-800 shadow-lg hover:shadow-xl hover:border-cyan-400 dark:hover:border-cyan-500 transition-all duration-300 group"
+          >
+            <div
+              class="w-12 h-12 rounded-xl bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center mb-4 group-hover:bg-cyan-200 dark:group-hover:bg-cyan-800/40 transition-colors"
+            >
+              <Languages
+                v-if="feature.icon === 'translate'"
+                class="w-6 h-6 text-cyan-600 dark:text-cyan-400"
+              />
+              <FileText
+                v-else-if="feature.icon === 'summarize'"
+                class="w-6 h-6 text-cyan-600 dark:text-cyan-400"
+              />
+              <CheckCircle
+                v-else-if="feature.icon === 'grammar'"
+                class="w-6 h-6 text-cyan-600 dark:text-cyan-400"
+              />
+              <Youtube
+                v-else-if="feature.icon === 'youtube'"
+                class="w-6 h-6 text-cyan-600 dark:text-cyan-400"
+              />
+              <Mic
+                v-else-if="
+                  feature.icon === 'voice' || feature.icon === 'speechToText'
+                "
+                class="w-6 h-6 text-cyan-600 dark:text-cyan-400"
+              />
+              <CloudUpload
+                v-else-if="feature.icon === 'fileUpload'"
+                class="w-6 h-6 text-cyan-600 dark:text-cyan-400"
+              />
+              <Download
+                v-else-if="feature.icon === 'export'"
+                class="w-6 h-6 text-cyan-600 dark:text-cyan-400"
+              />
+              <Star
+                v-else-if="feature.icon === 'favorites'"
+                class="w-6 h-6 text-cyan-600 dark:text-cyan-400"
+              />
+              <History
+                v-else-if="feature.icon === 'history'"
+                class="w-6 h-6 text-cyan-600 dark:text-cyan-400"
+              />
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
+              {{ t.about[feature.titleKey as keyof typeof t.about] }}
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+              {{ t.about[feature.descKey as keyof typeof t.about] }}
+            </p>
           </div>
         </div>
       </div>

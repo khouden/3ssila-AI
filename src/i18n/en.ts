@@ -223,6 +223,23 @@ export default {
     voiceFeatureDesc: "Speak to translate with our voice recognition",
     exportFeature: "Export Options",
     exportFeatureDesc: "Export results to PDF, DOCX, or text files",
+    grammarFeature: "Grammar Checker",
+    grammarFeatureDesc:
+      "Check and correct grammar errors in your text instantly",
+    youtubeFeature: "YouTube Converter",
+    youtubeFeatureDesc: "Extract and transcribe content from YouTube videos",
+    speechToTextFeature: "Speech to Text",
+    speechToTextFeatureDesc:
+      "Convert spoken words into written text with high accuracy",
+    fileUploadFeature: "File Upload",
+    fileUploadFeatureDesc:
+      "Extract text from PDF, DOCX, and image files for processing",
+    favoritesFeature: "Favorites",
+    favoritesFeatureDesc:
+      "Save and organize your best translations and summaries",
+    historyFeature: "History Tracking",
+    historyFeatureDesc:
+      "Access all your past translations and summaries anytime",
     // Hero section
     aboutUs: "About Us",
     heroTitle: "Breaking Language Barriers with",

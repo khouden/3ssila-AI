@@ -229,6 +229,23 @@ export default {
     voiceFeatureDesc: "Parlez pour traduire avec notre reconnaissance vocale",
     exportFeature: "Options d'exportation",
     exportFeatureDesc: "Exportez les résultats en PDF, DOCX ou fichiers texte",
+    grammarFeature: "Vérificateur de grammaire",
+    grammarFeatureDesc:
+      "Vérifiez et corrigez les erreurs grammaticales de votre texte instantanément",
+    youtubeFeature: "Convertisseur YouTube",
+    youtubeFeatureDesc: "Extrayez et transcrivez le contenu des vidéos YouTube",
+    speechToTextFeature: "Parole en texte",
+    speechToTextFeatureDesc:
+      "Convertissez la parole en texte écrit avec une grande précision",
+    fileUploadFeature: "Téléchargement de fichiers",
+    fileUploadFeatureDesc:
+      "Extrayez du texte à partir de fichiers PDF, DOCX et images pour le traitement",
+    favoritesFeature: "Favoris",
+    favoritesFeatureDesc:
+      "Enregistrez et organisez vos meilleures traductions et résumés",
+    historyFeature: "Suivi de l'historique",
+    historyFeatureDesc:
+      "Accédez à toutes vos traductions et résumés passés à tout moment",
     // Hero section
     aboutUs: "À propos de nous",
     heroTitle: "Briser les barrières linguistiques avec",
