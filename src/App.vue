@@ -6,6 +6,7 @@ import AppFooter from "./components/AppFooter.vue";
 import ToastNotification from "./components/ToastNotification.vue";
 import ConfirmDialog from "./components/ConfirmDialog.vue";
 import { Star } from "lucide-vue-next";
+import { auth } from "./stores/auth";
 
 const route = useRoute();
 const isAdminRoute = computed(() => route.path.startsWith("/admin"));
@@ -22,7 +23,7 @@ const isFavoritesPage = computed(() => route.path === "/favorites");
 
     <!-- Floating Favorites Button -->
     <RouterLink
-      v-if="!isAdminRoute && !isFavoritesPage"
+      v-if="auth.isAuthenticated() && !isAdminRoute && !isFavoritesPage"
       to="/favorites"
       class="fixed right-4 bottom-20 z-50 flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 text-white shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 group"
       aria-label="Favorites"
