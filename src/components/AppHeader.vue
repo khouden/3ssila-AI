@@ -160,16 +160,6 @@ onBeforeUnmount(() => {
             {{ t.nav.history }}
           </RouterLink>
 
-          <!-- Favorites -->
-          <RouterLink
-            to="/favorites"
-            class="relative px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 rounded-lg transition-all duration-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-1"
-            active-class="!text-yellow-500 dark:!text-yellow-400"
-          >
-            <Star class="w-4 h-4" />
-            {{ t.nav.favorites }}
-          </RouterLink>
-
           <!-- YouTube -->
           <RouterLink
             to="/youtube"
@@ -293,14 +283,6 @@ onBeforeUnmount(() => {
                     >
                       <Clock class="w-4 h-4" />
                       {{ t.nav.history }}
-                    </RouterLink>
-                    <RouterLink
-                      to="/favorites"
-                      @click="isProfileMenuOpen = false"
-                      class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                    >
-                      <Star class="w-4 h-4" />
-                      {{ t.nav.favorites }}
                     </RouterLink>
                     <RouterLink
                       to="/profile"
@@ -442,16 +424,6 @@ onBeforeUnmount(() => {
             >
               <Clock class="w-5 h-5" />
               {{ t.nav.history }}
-            </RouterLink>
-
-            <RouterLink
-              to="/favorites"
-              @click="closeMobileMenu"
-              class="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              active-class="!bg-yellow-50 dark:!bg-yellow-900/20 !text-yellow-600 dark:!text-yellow-400"
-            >
-              <Star class="w-5 h-5" />
-              {{ t.nav.favorites }}
             </RouterLink>
 
             <RouterLink
