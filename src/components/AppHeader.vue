@@ -20,6 +20,7 @@ import {
   User,
   Youtube,
   PenLine,
+  Mic,
 } from "lucide-vue-next";
 
 const { t } = useI18n();
@@ -187,6 +188,16 @@ onBeforeUnmount(() => {
           >
             <PenLine class="w-4 h-4" />
             {{ t.nav.grammar }}
+          </RouterLink>
+
+          <!-- Speech to Text -->
+          <RouterLink
+            to="/speech-to-text"
+            class="relative px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 rounded-lg transition-all duration-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-1"
+            active-class="!text-violet-500 dark:!text-violet-400"
+          >
+            <Mic class="w-4 h-4" />
+            {{ t.nav.speechToText }}
           </RouterLink>
 
           <!-- About -->
@@ -461,6 +472,16 @@ onBeforeUnmount(() => {
             >
               <PenLine class="w-5 h-5" />
               {{ t.nav.grammar }}
+            </RouterLink>
+
+            <RouterLink
+              to="/speech-to-text"
+              @click="closeMobileMenu"
+              class="flex items-center gap-3 px-4 py-3 text-base font-medium rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              active-class="!bg-violet-50 dark:!bg-violet-900/20 !text-violet-600 dark:!text-violet-400"
+            >
+              <Mic class="w-5 h-5" />
+              {{ t.nav.speechToText }}
             </RouterLink>
 
             <RouterLink

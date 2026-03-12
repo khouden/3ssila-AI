@@ -17,6 +17,7 @@ import ResetPasswordView from "../views/ResetPasswordView.vue";
 import ProfileView from "../views/ProfileView.vue";
 import YoutubeConverterView from "../views/YoutubeConverterView.vue";
 import GrammarCheckerView from "../views/GrammarCheckerView.vue";
+import SpeechToTextView from "../views/SpeechToTextView.vue";
 import AdminLayout from "../views/admin/AdminLayout.vue";
 import AdminDashboard from "../views/admin/AdminDashboard.vue";
 import AdminUsers from "../views/admin/AdminUsers.vue";
@@ -94,6 +95,11 @@ const routes: RouteRecordRaw[] = [
     path: "/grammar",
     name: "grammar",
     component: GrammarCheckerView as any,
+  },
+  {
+    path: "/speech-to-text",
+    name: "speech-to-text",
+    component: SpeechToTextView as any,
   },
   {
     path: "/admin",

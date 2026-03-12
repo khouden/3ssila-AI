@@ -32,6 +32,7 @@ export default {
     getStartedFree: "Get Started — It's Free",
     youtube: "YouTube",
     grammar: "Grammar",
+    speechToText: "Speech to Text",
   },
 
   // Theme
@@ -388,6 +389,24 @@ export default {
     suggestions: "Suggestions:",
     fetchError: "Failed to check grammar. Please try again.",
     note: "Powered by LanguageTool — supports 30+ languages. No API key required.",
+  },
+
+  // Speech to Text page
+  speechToText: {
+    title: "Speech to Text",
+    subtitle:
+      "Convert your voice into text in real-time using Azure Speech AI.",
+    language: "Language",
+    clickToStart: "Click the microphone to start",
+    listening: "Listening... Click to stop",
+    transcript: "Transcript",
+    copy: "Copy",
+    export: "Export",
+    clear: "Clear",
+    emptyState:
+      "Your transcribed text will appear here once you start speaking.",
+    waitingForSpeech: "Waiting for speech...",
+    note: "Powered by Azure Cognitive Services Speech API.",
   },
 
   // Contact page

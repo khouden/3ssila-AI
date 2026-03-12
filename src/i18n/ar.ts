@@ -32,6 +32,7 @@ export default {
     getStartedFree: "ابدأ الآن — مجاناً",
     youtube: "يوتيوب",
     grammar: "التدقيق",
+    speechToText: "تحويل الكلام",
   },
 
   // Theme
@@ -382,6 +383,22 @@ export default {
     suggestions: "اقتراحات:",
     fetchError: "فشل في التحقق من القواعد. يرجى المحاولة مرة أخرى.",
     note: "مدعوم بواسطة LanguageTool — يدعم أكثر من 30 لغة. لا يلزم مفتاح API.",
+  },
+
+  // Speech to Text page
+  speechToText: {
+    title: "تحويل الكلام إلى نص",
+    subtitle: "حوّل صوتك إلى نص في الوقت الفعلي باستخدام Azure Speech AI.",
+    language: "اللغة",
+    clickToStart: "اضغط على الميكروفون للبدء",
+    listening: "جاري الاستماع... اضغط للإيقاف",
+    transcript: "النص المحول",
+    copy: "نسخ",
+    export: "تصدير",
+    clear: "مسح",
+    emptyState: "سيظهر النص المحول هنا بمجرد أن تبدأ بالتحدث.",
+    waitingForSpeech: "في انتظار الكلام...",
+    note: "مدعوم بواسطة Azure Cognitive Services Speech API.",
   },
 
   // Contact page
