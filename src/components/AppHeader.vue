@@ -5,7 +5,6 @@ import { auth } from "../stores/auth";
 import { useI18n } from "../composables/useI18n";
 import LanguageSwitcher from "./LanguageSwitcher.vue";
 import {
-  Star,
   Sun,
   Moon,
   ChevronDown,

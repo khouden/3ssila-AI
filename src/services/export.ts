@@ -186,7 +186,7 @@ export const exportToPdf = async (options: ExportOptions): Promise<void> => {
       windowWidth: 800,
     });
 
-    const imgData = canvas.toDataURL("image/png");
+    canvas.toDataURL("image/png");
     const imgWidth = canvas.width;
     const imgHeight = canvas.height;
 

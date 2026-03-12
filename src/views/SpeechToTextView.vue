@@ -148,12 +148,11 @@ const copyToClipboard = async () => {
 };
 
 const handleExport = (format: ExportFormat) => {
-  exportResult(
-    t.value.speechToText.title,
-    transcriptText.value,
-    transcriptText.value,
-    format,
-  );
+  exportResult(format, {
+    inputText: transcriptText.value,
+    resultText: transcriptText.value,
+    mode: "summarize",
+  });
   isExportOpen.value = false;
 };
 
