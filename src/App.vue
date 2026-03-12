@@ -28,7 +28,9 @@ const isFavoritesPage = computed(() => route.path === "/favorites");
       aria-label="Favorites"
     >
       <Star class="w-5 h-5 fill-white" />
-      <span class="absolute right-full mr-2 px-2 py-1 rounded-lg bg-gray-800 text-white text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+      <span
+        class="absolute right-full mr-2 px-2 py-1 rounded-lg bg-gray-800 text-white text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+      >
         Favorites
       </span>
     </RouterLink>

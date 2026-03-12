@@ -105,7 +105,11 @@ const handleSignup = async () => {
               required
               class="appearance-none block w-full px-4 py-3 pr-10 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-shadow sm:text-sm"
             />
-            <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer">
+            <button
+              type="button"
+              @click="showPassword = !showPassword"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer"
+            >
               <EyeOff v-if="showPassword" class="w-4 h-4" />
               <Eye v-else class="w-4 h-4" />
             </button>
