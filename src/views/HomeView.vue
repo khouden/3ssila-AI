@@ -366,6 +366,17 @@ const resultCharacterCount = computed(() => {
   return tmp.textContent?.length || 0;
 });
 
+// Detect if content is large (has table or very long text) to switch layout
+const isContentLarge = computed(() => {
+  const hasTable =
+    inputText.value.includes("<table") || resultText.value.includes("<table");
+  const charThreshold = 500;
+  const isLongText =
+    inputPlainText.value.length > charThreshold ||
+    resultCharacterCount.value > charThreshold;
+  return hasTable || isLongText;
+});
+
 const onInputTextUpdate = (text: string) => {
   inputPlainText.value = text;
 };
@@ -765,7 +776,8 @@ const handleExport = async (format: ExportFormat) => {
 
     <div class="max-w-6xl mx-auto px-4 pb-20">
       <div
-        class="bg-white dark:bg-[#1a1a1a] rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col h-[600px]"
+        class="bg-white dark:bg-[#1a1a1a] rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col max-w-full overflow-hidden transition-all duration-300"
+        :class="isContentLarge ? '' : 'h-[600px]'"
       >
         <div
           class="flex flex-col sm:flex-row items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-[#252525] px-4 py-3 gap-4 rounded-t-3xl overflow-visible relative z-20"
@@ -887,13 +899,21 @@ const handleExport = async (format: ExportFormat) => {
           </div>
         </div>
 
-        <div class="flex-1 flex flex-col md:flex-row min-h-0">
+        <div
+          class="flex-1 flex flex-col min-h-0"
+          :class="isContentLarge ? '' : 'md:flex-row'"
+        >
           <div
-            class="flex-1 p-6 flex flex-col relative border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] md:rounded-bl-3xl"
-            :class="{
-              'bg-cyan-50 dark:bg-cyan-900/20 border-cyan-400 border-2 border-dashed':
-                isDragging,
-            }"
+            class="flex-1 min-w-0 p-6 flex flex-col relative border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] overflow-hidden"
+            :class="[
+              isContentLarge
+                ? 'min-h-[250px]'
+                : 'md:border-b-0 md:border-r md:rounded-bl-3xl',
+              {
+                'bg-cyan-50 dark:bg-cyan-900/20 border-cyan-400 border-2 border-dashed':
+                  isDragging,
+              },
+            ]"
             @dragover="handleDragOver"
             @dragleave="handleDragLeave"
             @drop="handleDrop"
@@ -962,7 +982,9 @@ const handleExport = async (format: ExportFormat) => {
               <Paperclip v-else class="h-5 w-5" />
             </button>
 
-            <div class="flex-1 overflow-y-auto pt-10 custom-scrollbar">
+            <div
+              class="flex-1 overflow-y-auto overflow-x-hidden pt-10 custom-scrollbar min-w-0"
+            >
               <TiptapEditor
                 v-model="inputText"
                 :placeholder="t.home.inputPlaceholder"
@@ -1021,7 +1043,12 @@ const handleExport = async (format: ExportFormat) => {
           </div>
 
           <div
-            class="flex-1 p-6 bg-gray-50 dark:bg-[#202020] flex flex-col relative rounded-b-3xl md:rounded-bl-none md:rounded-br-3xl"
+            class="flex-1 min-w-0 p-6 bg-gray-50 dark:bg-[#202020] flex flex-col relative rounded-b-3xl overflow-hidden"
+            :class="
+              isContentLarge
+                ? 'min-h-[200px]'
+                : 'md:rounded-bl-none md:rounded-br-3xl'
+            "
           >
             <div
               class="absolute top-4 left-6 text-xs font-bold text-gray-400 uppercase tracking-wider"
@@ -1043,7 +1070,10 @@ const handleExport = async (format: ExportFormat) => {
             </div>
 
             <!-- Result text display -->
-            <div v-else class="flex-1 mt-6 overflow-y-auto custom-scrollbar">
+            <div
+              v-else
+              class="flex-1 mt-6 overflow-y-auto overflow-x-hidden custom-scrollbar min-w-0"
+            >
               <TiptapEditor
                 :model-value="resultText"
                 :editable="false"

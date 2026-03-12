@@ -293,6 +293,9 @@ const insertTable = () => {
 .tiptap-content {
   @apply text-gray-700 dark:text-gray-300 text-lg leading-relaxed;
   padding: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
 }
 
 .tiptap-content:focus {
@@ -395,6 +398,7 @@ const insertTable = () => {
 }
 .tiptap-content .tableWrapper {
   @apply overflow-x-auto my-3;
+  max-width: 100%;
 }
 .tiptap-content table .resize-cursor {
   cursor: col-resize;
