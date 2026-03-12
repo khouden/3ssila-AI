@@ -16,6 +16,7 @@ import ForgotPasswordView from "../views/ForgotPasswordView.vue";
 import ResetPasswordView from "../views/ResetPasswordView.vue";
 import ProfileView from "../views/ProfileView.vue";
 import YoutubeConverterView from "../views/YoutubeConverterView.vue";
+import GrammarCheckerView from "../views/GrammarCheckerView.vue";
 import AdminLayout from "../views/admin/AdminLayout.vue";
 import AdminDashboard from "../views/admin/AdminDashboard.vue";
 import AdminUsers from "../views/admin/AdminUsers.vue";
@@ -88,6 +89,11 @@ const routes: RouteRecordRaw[] = [
     path: "/youtube",
     name: "youtube",
     component: YoutubeConverterView as any,
+  },
+  {
+    path: "/grammar",
+    name: "grammar",
+    component: GrammarCheckerView as any,
   },
   {
     path: "/admin",

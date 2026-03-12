@@ -31,6 +31,7 @@ export default {
     getStarted: "ابدأ الآن",
     getStartedFree: "ابدأ الآن — مجاناً",
     youtube: "يوتيوب",
+    grammar: "التدقيق",
   },
 
   // Theme
@@ -362,6 +363,25 @@ export default {
     rateLimited: "طلبات كثيرة جداً. يرجى المحاولة لاحقاً.",
     fetchError: "فشل في جلب النص. يرجى المحاولة مرة أخرى.",
     note: "يتم استخراج النصوص من الترجمات التلقائية أو اليدوية على يوتيوب.",
+  },
+
+  // Grammar checker page
+  grammar: {
+    title: "مدقق الإملاء والقواعد",
+    subtitle: "اكتشف الأخطاء النحوية والإملائية والأسلوبية في أكثر من 30 لغة.",
+    inputLabel: "النص",
+    inputPlaceholder:
+      "اكتب أو الصق النص هنا للتحقق من الأخطاء النحوية والإملائية...",
+    checkButton: "تحقق من القواعد",
+    checking: "جاري التحقق...",
+    clear: "مسح",
+    correctedText: "النص المصحح",
+    issuesList: "تفاصيل الأخطاء",
+    noErrors: "لم يتم العثور على أخطاء! نصك يبدو رائعاً.",
+    errorsFound: "تم العثور على {count} مشكلة",
+    suggestions: "اقتراحات:",
+    fetchError: "فشل في التحقق من القواعد. يرجى المحاولة مرة أخرى.",
+    note: "مدعوم بواسطة LanguageTool — يدعم أكثر من 30 لغة. لا يلزم مفتاح API.",
   },
 
   // Contact page

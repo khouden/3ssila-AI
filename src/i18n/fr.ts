@@ -31,6 +31,7 @@ export default {
     getStarted: "Commencer",
     getStartedFree: "Commencer — C'est gratuit",
     youtube: "YouTube",
+    grammar: "Grammaire",
   },
 
   // Theme
@@ -377,6 +378,26 @@ export default {
     fetchError:
       "Échec de la récupération de la transcription. Veuillez réessayer.",
     note: "Les transcriptions sont extraites des sous-titres auto-générés ou manuels de YouTube.",
+  },
+
+  // Grammar checker page
+  grammar: {
+    title: "Correcteur de Grammaire et d'Orthographe",
+    subtitle:
+      "Détectez les erreurs de grammaire, d'orthographe et de style dans plus de 30 langues.",
+    inputLabel: "Votre Texte",
+    inputPlaceholder:
+      "Tapez ou collez votre texte ici pour vérifier les erreurs de grammaire et d'orthographe...",
+    checkButton: "Vérifier la Grammaire",
+    checking: "Vérification...",
+    clear: "Effacer",
+    correctedText: "Texte Corrigé",
+    issuesList: "Détails des Erreurs",
+    noErrors: "Aucune erreur trouvée ! Votre texte est parfait.",
+    errorsFound: "{count} problèmes trouvés",
+    suggestions: "Suggestions :",
+    fetchError: "Échec de la vérification grammaticale. Veuillez réessayer.",
+    note: "Propulsé par LanguageTool — prend en charge plus de 30 langues. Aucune clé API requise.",
   },
 
   // Contact page

@@ -31,6 +31,7 @@ export default {
     getStarted: "Get Started",
     getStartedFree: "Get Started — It's Free",
     youtube: "YouTube",
+    grammar: "Grammar",
   },
 
   // Theme
@@ -368,6 +369,25 @@ export default {
     rateLimited: "Too many requests. Please try again later.",
     fetchError: "Failed to fetch transcript. Please try again.",
     note: "Transcripts are extracted from YouTube's auto-generated or manual captions.",
+  },
+
+  // Grammar checker page
+  grammar: {
+    title: "Grammar & Spell Checker",
+    subtitle: "Detect grammar, spelling, and style errors in 30+ languages.",
+    inputLabel: "Your Text",
+    inputPlaceholder:
+      "Type or paste your text here to check for grammar and spelling errors...",
+    checkButton: "Check Grammar",
+    checking: "Checking...",
+    clear: "Clear",
+    correctedText: "Corrected Text",
+    issuesList: "Issues Details",
+    noErrors: "No errors found! Your text looks great.",
+    errorsFound: "{count} issues found",
+    suggestions: "Suggestions:",
+    fetchError: "Failed to check grammar. Please try again.",
+    note: "Powered by LanguageTool — supports 30+ languages. No API key required.",
   },
 
   // Contact page
